@@ -256,6 +256,16 @@ tr:hover {
   /* Increased from 280px to 180px for a taller window */
   position: relative;
   outline: none;
+  /* Hide native scrollbars to avoid duplicates with our custom synced bars */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+}
+
+.schedule-excel-wrapper::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 .schedule-scroll-bar-top,
