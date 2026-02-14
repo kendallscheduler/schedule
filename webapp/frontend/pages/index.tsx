@@ -12,6 +12,7 @@ export default function Home() {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1rem' }}>
       <header style={{ textAlign: 'center', marginBottom: '4rem', marginTop: '4rem' }}>
+        <img src="/kendall_logo.jpg" alt="Kendall Internal Medicine Logo" style={{ width: 150, height: 150, marginBottom: '2rem', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }} />
         <h1 style={{ fontSize: '3rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #0f172a 0%, #2563eb 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.2 }}>
           Kendall Hospital Internal Medicine<br />Master Scheduler
         </h1>
