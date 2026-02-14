@@ -240,9 +240,11 @@ def solve(
             model.Add(sum(sr_nf) == 1)
             model.Add(sum(sr_icun) == 1)
             model.Add(sum(sr_swing) == 1)
-            # FIX: Team G is optional and only used as a last resort to fill floor needs.
-            model.Add(sum(sr_g) <= 1)
-            total_deficit.append(sum(sr_g) * 1000) # Small penalty to favor 0 occupancy
+            # FIX: Team G is PREFERRED (rewarded) but can be turned off if seniors are capped.
+            is_g_active = model.NewBoolVar(f"is_all_g_on_{w}")
+            model.Add(sum(sr_g) == is_g_active)
+            # 300k reward for having Team G active
+            total_deficit.append(is_g_active.Not() * 300000)
 
         # No interns on Team G (Senior only)
         jr_g = [get_ind(r, w, IDX_G) for r in intern_idxs]
@@ -534,6 +536,13 @@ def solve(
                 deficit = model.NewIntVar(0, 52, f"def_{r_idx}_{cat}")
                 model.Add(sum(cat_bools) + deficit >= needed)
                 total_deficit.append(deficit * 10000000)  # 10M per missing week
+                
+                # SURPLUS PENALTY: Prevent residents from going way past their floor requirements
+                # High priority to stop G-team bleed, but lower than mandatory coverage.
+                surplus = model.NewIntVar(0, 52, f"sur_{r_idx}_{cat}")
+                model.Add(sum(cat_bools) <= needed + surplus)
+                if cat == "FLOORS":
+                    total_deficit.append(surplus * 1000000) # 1M penalty per extra floor week
 
                 # FIX 4: Hard cap on CORE ELECTIVE rotations.
                 # Cannot exceed required_weeks. FLOORS/ICU/CLINIC are exempt (coverage needs).
