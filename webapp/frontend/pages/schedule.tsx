@@ -463,20 +463,20 @@ export default function SchedulePage() {
               onScroll={() => syncScroll('top')}
               aria-label="Horizontal scroll"
             >
-              <div className="schedule-scroll-spacer" style={{ width: 52 * 56 + 264 }} />
+              <div className="schedule-scroll-spacer" style={{ width: 52 * 60 + 340 }} />
             </div>
             <div
               ref={scrollMainRef}
               className="schedule-excel-wrapper"
               onScroll={() => syncScroll('main')}
             >
-              <table className="schedule-excel-table">
+              <table className="schedule-excel-table" style={{ tableLayout: 'fixed', width: 52 * 60 + 340 }}>
                 <thead>
                   <tr className="schedule-block-row">
                     <th rowSpan={2} className="schedule-th-clear" style={{ width: 40, minWidth: 40 }} />
-                    <th rowSpan={2} className="schedule-th-cohort">Cohort</th>
-                    <th rowSpan={2} className="schedule-th-pgy">PGY</th>
-                    <th rowSpan={2} className="schedule-th-name">Name</th>
+                    <th rowSpan={2} className="schedule-th-cohort" style={{ width: 80, minWidth: 80 }}>Cohort</th>
+                    <th rowSpan={2} className="schedule-th-pgy" style={{ width: 60, minWidth: 60 }}>PGY</th>
+                    <th rowSpan={2} className="schedule-th-name" style={{ width: 160, minWidth: 160 }}>Name</th>
                     {blocks.map((b, i) => (
                       <th key={i} colSpan={b.colspan} className="schedule-th-block">
                         {b.label}
@@ -485,7 +485,11 @@ export default function SchedulePage() {
                   </tr>
                   <tr className="schedule-week-row">
                     {Array.from({ length: 52 }, (_, i) => (
-                      <th key={i} className={`schedule-th-week ${blockEdges.has(i + 1) ? 'block-edge' : ''}`}>
+                      <th
+                        key={i}
+                        className={`schedule-th-week ${blockEdges.has(i + 1) ? 'block-edge' : ''}`}
+                        style={{ width: 60, minWidth: 60 }}
+                      >
                         {getWeekSpan(i + 1, startDate)}
                       </th>
                     ))}
@@ -578,7 +582,7 @@ export default function SchedulePage() {
               onScroll={() => syncScroll('bottom')}
               aria-label="Horizontal scroll bottom"
             >
-              <div className="schedule-scroll-spacer" style={{ width: 52 * 56 + 264 }} />
+              <div className="schedule-scroll-spacer" style={{ width: 52 * 60 + 340 }} />
             </div>
           </div>
         )
