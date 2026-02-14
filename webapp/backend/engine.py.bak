@@ -1,0 +1,371 @@
+"""OR-Tools CP-SAT scheduling engine for resident-dependent schedules."""
+from typing import Dict, List, Optional, Tuple
+from ortools.sat.python import cp_model
+
+# Rotation indices
+ROT_CODES = [
+    "A", "B", "C", "D", "G",
+    "ICU", "ICU E", "ICU N", "ICU H", "NF", "SWING",
+    "CLINIC", "CLINIC *",
+    "ED", "CARDIO", "CARDIO-RAM", "CARDIO-HCA",
+    "ID", "NEURO", "VACATION",
+    "GERIATRICS", "PULMONOLOGY", "NEPHROLOGY", "PALLIATIVE", "PAIN", "RHEUMATOLOGY", "ENDOCRINOLOGY",
+    "TRAUMA", "SICU", "PLASTIC", "ELECTIVE", "ANESTHESIA",
+]
+ROT_IDX = {c: i for i, c in enumerate(ROT_CODES)}
+N_ROT = len(ROT_CODES)
+
+FLOOR_ABCD = [ROT_IDX["A"], ROT_IDX["B"], ROT_IDX["C"], ROT_IDX["D"]]
+ICU_DAY = [ROT_IDX["ICU"], ROT_IDX["ICU E"]]
+# Night shifts: NF, ICU N, SWING (all count toward night caps)
+NIGHT_IDX = [ROT_IDX["ICU N"], ROT_IDX["NF"], ROT_IDX["SWING"]]
+IDX_VAC = ROT_IDX["VACATION"]
+IDX_ED = ROT_IDX["ED"]
+IDX_SWING = ROT_IDX["SWING"]
+IDX_NF = ROT_IDX["NF"]
+IDX_ICUN = ROT_IDX["ICU N"]
+IDX_G = ROT_IDX["G"]
+IDX_CARDIO_RAM = ROT_IDX["CARDIO-RAM"]
+# Both CLINIC and CLINIC * count toward required; overflow beyond required counts as elective
+CLINIC_ALL_IDX = [ROT_IDX["CLINIC"], ROT_IDX["CLINIC *"]]
+CLINIC_MIN_PER_WEEK = 10
+CLINIC_MAX_PER_WEEK = 12
+MAX_COHORT_SIZE = 10  # No cohort may exceed 10 residents (28 sr + 22 jr = 50, 5 cohorts avg 10)
+
+
+def _indicator(model, var, idx, name=""):
+    b = model.NewBoolVar(name)
+    model.Add(var == idx).OnlyEnforceIf(b)
+    model.Add(var != idx).OnlyEnforceIf(b.Not())
+    return b
+
+
+def _indicator_in(model, var, idx_list, name=""):
+    if len(idx_list) == 1:
+        return _indicator(model, var, idx_list[0], name)
+    eqs = [_indicator(model, var, i, "") for i in idx_list]
+    b = model.NewBoolVar(name)
+    model.Add(sum(eqs) >= 1).OnlyEnforceIf(b)
+    model.Add(sum(eqs) == 0).OnlyEnforceIf(b.Not())
+    return b
+
+
+def solve(
+    residents: List[dict],
+    requirements_by_pgy: Dict[str, List[dict]],
+    completions_by_resident: Dict[int, Dict[str, int]],
+    vacation_requests: List[dict],
+    cohort_defs: List[dict] = None,
+    july_weeks: List[int] = None,
+    ramirez_until_week: int = 7,
+    time_limit: int = 300,
+    random_seed: Optional[int] = None,
+    relax_vacation_blocks: bool = False,
+    relax_geriatrics_coverage: bool = False,
+) -> Tuple[Optional[Dict[int, Dict[int, str]]], str, List[str]]:
+    """
+    residents: [{id, name, pgy, is_senior, is_intern, cohort_id, constraints_json}]
+    requirements_by_pgy: {pgy: [{category, required_weeks, counts_as}]}
+    completions_by_resident: {resident_id: {category: weeks}}
+    vacation_requests: [{resident_id, start_week, length_weeks, hard_lock}]
+    cohort_defs: [{cohort_id, clinic_weeks}]
+    """
+    july_weeks = july_weeks or [1, 2, 3, 4]
+    model = cp_model.CpModel()
+    N = len(residents)
+    weeks = list(range(1, 53))
+    res_by_idx = {i: r for i, r in enumerate(residents)}
+    senior_idxs = [i for i, r in enumerate(residents) if r["is_senior"]]
+    intern_idxs = [i for i, r in enumerate(residents) if r["is_intern"]]
+
+    assign = {}
+    for r in range(N):
+        for w in weeks:
+            assign[(r, w)] = model.NewIntVar(0, N_ROT - 1, f"a_{r}_{w}")
+
+    is_on = {}
+
+    def get_ind(r, w, idx):
+        key = (r, w, idx)
+        if key not in is_on:
+            is_on[key] = _indicator(model, assign[(r, w)], idx, "")
+        return is_on[key]
+
+    def get_ind_set(r, w, idx_list, tag=""):
+        key = (r, w, tuple(idx_list))
+        if key not in is_on:
+            is_on[key] = _indicator_in(model, assign[(r, w)], idx_list, f"{tag}_{r}_{w}")
+        return is_on[key]
+
+    # 1. Vacation: 4 weeks per resident
+    for r in range(N):
+        vac_bools = [get_ind(r, w, IDX_VAC) for w in weeks]
+        model.Add(sum(vac_bools) == 4)
+
+    # 2. Vacation requests: Block A (2 options) + Block B (2 options); solver picks best fit.
+    # Incoming interns (placeholders) have no requests—solver places their vacation freely.
+    vac_by_ri = {}
+    for vreq in vacation_requests:
+        ri = next((i for i, res in enumerate(residents) if res["id"] == vreq["resident_id"]), None)
+        if ri is None:
+            continue
+        vac_by_ri[ri] = vreq
+
+    for vreq in vacation_requests:
+        for start, length in vreq.get("hard_locks", []):
+            ri = next((i for i, res in enumerate(residents) if res["id"] == vreq["resident_id"]), None)
+            if ri is None:
+                continue
+            for w in range(start, start + length):
+                if 1 <= w <= 52:
+                    model.Add(assign[(ri, w)] == IDX_VAC)
+
+    def add_block_options(ri, options, tag):
+        """Constrain resident ri to take 2 weeks vacation in one of the given start-week options."""
+        if not options:
+            return
+        opts = sorted(set(w for w in options if 1 <= w <= 51))
+        choose = [model.NewBoolVar(f"vac_{tag}_opt{i}_{ri}") for i in range(len(opts))]
+        model.Add(sum(choose) == 1)
+        for i, start in enumerate(opts):
+            for w in range(start, min(start + 2, 53)):
+                if 1 <= w <= 52:
+                    model.Add(assign[(ri, w)] == IDX_VAC).OnlyEnforceIf(choose[i])
+
+    if not relax_vacation_blocks:
+        for ri, vreq in vac_by_ri.items():
+            add_block_options(ri, vreq.get("block_a_options", []), "a")
+            add_block_options(ri, vreq.get("block_b_options", []), "b")
+
+    # 3. Coverage
+    for floor_idx in FLOOR_ABCD:
+        for w in weeks:
+            sr = [get_ind(r, w, floor_idx) for r in senior_idxs]
+            jr = [get_ind(r, w, floor_idx) for r in intern_idxs]
+            model.Add(sum(sr) >= 1)
+            model.Add(sum(jr) >= 2)
+
+    for w in weeks:
+        sr = [get_ind_set(r, w, ICU_DAY, "icu") for r in senior_idxs]
+        jr = [get_ind_set(r, w, ICU_DAY, "icu") for r in intern_idxs]
+        model.Add(sum(sr) >= 2)
+        model.Add(sum(jr) >= 2)
+
+    # Night shifts: NF needs 1 senior minimum; prefer 1 senior + 1 intern when possible (soft)
+    nf_no_intern_penalty = []
+    for w in weeks:
+        sr = [get_ind(r, w, IDX_NF) for r in senior_idxs]
+        jr = [get_ind(r, w, IDX_NF) for r in intern_idxs]
+        model.Add(sum(sr) >= 1)
+        has_jr = model.NewBoolVar(f"nf_jr_{w}")
+        model.Add(sum(jr) >= 1).OnlyEnforceIf(has_jr)
+        model.Add(sum(jr) == 0).OnlyEnforceIf(has_jr.Not())
+        nf_no_intern_penalty.append(has_jr)
+
+    for w in weeks:
+        sr = [get_ind(r, w, IDX_ICUN) for r in senior_idxs]
+        jr = [get_ind(r, w, IDX_ICUN) for r in intern_idxs]
+        model.Add(sum(sr) >= 1)
+        model.Add(sum(jr) >= 1)
+
+    for w in weeks:
+        sr = [get_ind(r, w, IDX_SWING) for r in senior_idxs]
+        model.Add(sum(sr) >= 1)
+
+    IDX_GERIATRICS = ROT_IDX["GERIATRICS"]
+    IDX_NEURO = ROT_IDX["NEURO"]
+    if not relax_geriatrics_coverage:
+        for w in weeks:
+            sr_geri = [get_ind(r, w, IDX_GERIATRICS) for r in senior_idxs]
+            model.Add(sum(sr_geri) >= 1)
+            sr_neuro = [get_ind(r, w, IDX_NEURO) for r in senior_idxs]
+            model.Add(sum(sr_neuro) >= 1)
+
+    for r in intern_idxs:
+        for w in weeks:
+            model.Add(assign[(r, w)] != IDX_G)
+
+    # 4. ED: max 3, no one in July
+    for w in weeks:
+        ed_all = [_indicator(model, assign[(r, w)], IDX_ED, "") for r in range(N)]
+        model.Add(sum(ed_all) <= 3)
+        if w in july_weeks:
+            model.Add(sum(ed_all) == 0)
+
+    # 5. Ramirez
+    for r in range(N):
+        res = residents[r]
+        if res["pgy"] == "PGY1" and not res.get("is_ty", False):
+            cj = res.get("constraints_json") or {}
+            until = cj.get("no_cardio_before_week", ramirez_until_week)
+            for w in range(1, until + 1):
+                model.Add(assign[(r, w)] != IDX_CARDIO_RAM)
+
+    # 6. Night caps: max 8 weeks/year, max 16 weeks over 3 years, max 4 consecutive
+    for r in range(N):
+        night_bools = [get_ind_set(r, w, NIGHT_IDX, "n") for w in weeks]
+        model.Add(sum(night_bools) <= 8)
+        prior_nights = completions_by_resident.get(residents[r]["id"], {}).get("NF", 0) + completions_by_resident.get(residents[r]["id"], {}).get("ICU_NIGHT", 0)
+        model.Add(prior_nights + sum(night_bools) <= 16)
+        for s in range(48):
+            model.Add(sum(night_bools[s:s + 5]) <= 4)
+
+    # 7. Requirements (remaining = required - completed)
+    # NF counts as FLOORS. SWING counts as NF (and thus FLOORS). ICU days/nights interchangeable.
+    REQ_TO_IDX = {
+        "ICU": ICU_DAY + [IDX_ICUN],
+        "ICU_NIGHT": [IDX_ICUN],
+        "FLOORS": FLOOR_ABCD + [IDX_G] + [IDX_NF] + [IDX_SWING],
+        "CLINIC": CLINIC_ALL_IDX,
+        "CARDIO": [ROT_IDX["CARDIO"], IDX_CARDIO_RAM, ROT_IDX["CARDIO-HCA"]],
+        "ID": [ROT_IDX["ID"]],
+        "ED": [IDX_ED],
+        "NEURO": [ROT_IDX["NEURO"]],
+        "NF": [IDX_NF, IDX_SWING],
+        "GERIATRICS": [ROT_IDX["GERIATRICS"]],
+        "PULMONOLOGY": [ROT_IDX["PULMONOLOGY"]],
+        "NEPHROLOGY": [ROT_IDX["NEPHROLOGY"]],
+        "PALLIATIVE": [ROT_IDX["PALLIATIVE"]],
+        "PAIN": [ROT_IDX["PAIN"]],
+        "RHEUMATOLOGY": [ROT_IDX["RHEUMATOLOGY"]],
+        "ENDOCRINOLOGY": [ROT_IDX["ENDOCRINOLOGY"]],
+        "TRAUMA": [ROT_IDX["TRAUMA"]],
+        "SICU": [ROT_IDX["SICU"]],
+        "PLASTIC": [ROT_IDX["PLASTIC"]],
+        "ELECTIVE": [ROT_IDX["ELECTIVE"], ROT_IDX["CARDIO"], ROT_IDX["CARDIO-RAM"], ROT_IDX["CARDIO-HCA"],
+                     ROT_IDX["ID"], ROT_IDX["NEURO"], ROT_IDX["GERIATRICS"], ROT_IDX["PULMONOLOGY"],
+                     ROT_IDX["NEPHROLOGY"], ROT_IDX["PALLIATIVE"], ROT_IDX["PAIN"],
+                     ROT_IDX["RHEUMATOLOGY"], ROT_IDX["ENDOCRINOLOGY"], ROT_IDX["ICU H"], ROT_IDX["ANESTHESIA"]],
+        "ANESTHESIA": [ROT_IDX["ANESTHESIA"]],
+    }
+    total_deficit = []
+    for r_idx in range(N):
+        res = residents[r_idx]
+        pgy = res["pgy"]
+        track = res.get("track") or ""
+        reqs = requirements_by_pgy.get(f"{pgy}:{track}", []) or requirements_by_pgy.get(f"{pgy}:", [])
+        comp = completions_by_resident.get(res["id"], {})
+        clinic_req = next((r["required_weeks"] for r in reqs if r["category"] == "CLINIC"), 0)
+        clinic_comp = comp.get("CLINIC", 0)
+        clinic_bools = [get_ind_set(r_idx, w, CLINIC_ALL_IDX, "cl") for w in weeks]
+        clinic_sum = sum(clinic_bools)
+        clinic_overflow = model.NewIntVar(0, 52, f"clinic_ov_{r_idx}")
+        model.Add(clinic_overflow >= clinic_sum + clinic_comp - clinic_req)
+        for req in reqs:
+            cat = req["category"]
+            if cat == "VACATION":
+                continue
+            req_weeks = req["required_weeks"]
+            done = comp.get(cat, 0)
+            needed = max(0, req_weeks - done)
+            idx_list = REQ_TO_IDX.get(cat)
+            if idx_list is None or needed <= 0:
+                continue
+            
+            # SOFT CONSTRAINT: minimize deficit
+            if cat == "ELECTIVE":
+                elective_bools = [get_ind_set(r_idx, w, idx_list, cat) for w in weeks]
+                deficit = model.NewIntVar(0, needed, f"def_{r_idx}_{cat}")
+                model.Add(sum(elective_bools) + clinic_overflow + deficit >= needed)
+                total_deficit.append(deficit * 100) # Weight deficit heavily
+            else:
+                cat_bools = [get_ind_set(r_idx, w, idx_list, cat) for w in weeks]
+                deficit = model.NewIntVar(0, needed, f"def_{r_idx}_{cat}")
+                model.Add(sum(cat_bools) + deficit >= needed)
+                total_deficit.append(deficit * 100)
+
+    # 8. Clinic: designated cohort must be present; total 10-12 (3-5 extras from any cohort)
+    # Cohorts are capped at MAX_COHORT_SIZE (9), so all cohort members fit in clinic.
+    cohort_defs = cohort_defs or []
+    for cd in cohort_defs:
+        coh_res = [i for i, r in enumerate(residents) if r.get("cohort_id") == cd["cohort_id"]]
+        if not coh_res:
+            continue
+        for w in cd.get("clinic_weeks", []):
+            if 1 <= w <= 52:
+                for r in coh_res:
+                    b = get_ind_set(r, w, CLINIC_ALL_IDX, "cl")
+                    model.Add(b == 1)
+    for w in weeks:
+        clinic_count = sum(get_ind_set(r, w, CLINIC_ALL_IDX, "cl") for r in range(N))
+        model.Add(clinic_count <= CLINIC_MAX_PER_WEEK)
+
+    # TYs do not attend our clinic; they have their own clinic elsewhere
+    ty_idxs = [r for r in range(N) if residents[r].get("pgy") == "TY" or residents[r].get("is_ty", False)]
+    for r in ty_idxs:
+        for w in weeks:
+            for idx in CLINIC_ALL_IDX:
+                model.Add(assign[(r, w)] != idx)
+        # Anesthesia residents (TY track anesthesia) must do Anesthesia in last 4 weeks
+        if residents[r].get("track") == "anesthesia":
+            idx_anes = ROT_IDX["ANESTHESIA"]
+            for w in range(49, 53):
+                model.Add(assign[(r, w)] == idx_anes)
+
+    # Objective: minimize rotation changes; secondary: favor co-intern pairing (same cohort on floors/ICU)
+    change_cost = []
+    for r in range(N):
+        for w in range(1, 52):
+            diff = model.NewBoolVar(f"ch_{r}_{w}")
+            model.Add(assign[(r, w)] != assign[(r, w + 1)]).OnlyEnforceIf(diff)
+            model.Add(assign[(r, w)] == assign[(r, w + 1)]).OnlyEnforceIf(diff.Not())
+            change_cost.append(diff)
+    FLOORS_IDX = FLOOR_ABCD + [IDX_G]
+    ICU_FULL_IDX = ICU_DAY + [IDX_ICUN]
+    together_bonus = []
+    cohort_interns = {}
+    for i in intern_idxs:
+        cid = residents[i].get("cohort_id")
+        if cid is not None:
+            cohort_interns.setdefault(cid, []).append(i)
+    for cid, idxs in cohort_interns.items():
+        for ii, i in enumerate(idxs):
+            for j in idxs[ii + 1:]:
+                for w in weeks:
+                    both_floors = model.NewBoolVar(f"tog_f_{i}_{j}_{w}")
+                    both_icu = model.NewBoolVar(f"tog_icu_{i}_{j}_{w}")
+                    fi = get_ind_set(i, w, FLOORS_IDX)
+                    fj = get_ind_set(j, w, FLOORS_IDX)
+                    model.Add(fi + fj == 2).OnlyEnforceIf(both_floors)
+                    model.Add(fi + fj != 2).OnlyEnforceIf(both_floors.Not())
+                    ui = get_ind_set(i, w, ICU_FULL_IDX)
+                    uj = get_ind_set(j, w, ICU_FULL_IDX)
+                    model.Add(ui + uj == 2).OnlyEnforceIf(both_icu)
+                    model.Add(ui + uj != 2).OnlyEnforceIf(both_icu.Not())
+                    together_bonus.append(both_floors)
+                    together_bonus.append(both_icu)
+    primary_weight = 1000
+    nf_intern_pref_weight = 10
+    model.Minimize(
+        primary_weight * sum(change_cost)
+        + sum(total_deficit)
+        - sum(together_bonus)
+        + nf_intern_pref_weight * (52 - sum(nf_no_intern_penalty))
+    )
+
+    solver = cp_model.CpSolver()
+    if time_limit > 0:
+        solver.parameters.max_time_in_seconds = time_limit
+    # time_limit 0 = unlimited (solver runs until OPTIMAL/FEASIBLE/INFEASIBLE)
+    if random_seed is not None:
+        solver.parameters.random_seed = random_seed
+
+    status = solver.Solve(model)
+    conflicts = []
+
+    if status in (cp_model.OPTIMAL, cp_model.FEASIBLE):
+        assignments = {}
+        for r in range(N):
+            rid = residents[r]["id"]
+            assignments[rid] = {}
+            for w in weeks:
+                idx = int(solver.Value(assign[(r, w)]))
+                assignments[rid][w] = ROT_CODES[idx]
+        st = "OPTIMAL" if status == cp_model.OPTIMAL else "FEASIBLE"
+        return assignments, st, conflicts
+
+    conflicts.append(solver.StatusName(status))
+    for v in vacation_requests:
+        if v.get("hard_lock"):
+            conflicts.append(f"Hard lock: resident {v['resident_id']} weeks {v['start_week']}-{v['start_week']+v.get('length_weeks',2)-1}")
+    return None, solver.StatusName(status), conflicts

@@ -1,0 +1,53 @@
+Analyzing workbook: 2025 Updated Schedule - Copy 2026.xlsx
+Total Residents: 51
+  Seniors: 29
+  Interns: 22
+
+Weekly Coverage Needs:
+  Seniors needed: 9
+  Interns needed: 12
+
+Cohort Info:
+  Cohort 1: 8 total (6 Sr, 2 Jr)
+    Clinic weeks: [1, 6, 11, 16, 21, 28, 33, 38, 43, 48, 51]
+  Cohort 2: 8 total (4 Sr, 4 Jr)
+    Clinic weeks: [2, 7, 12, 17, 22, 29, 34, 39, 44, 49]
+  Cohort 3: 9 total (7 Sr, 2 Jr)
+    Clinic weeks: [3, 8, 13, 18, 23, 30, 35, 40, 45, 50]
+  Cohort 4: 10 total (6 Sr, 4 Jr)
+    Clinic weeks: [4, 9, 14, 19, 24, 31, 36, 41, 46]
+  Cohort 5: 8 total (6 Sr, 2 Jr)
+    Clinic weeks: [5, 10, 15, 20, 25, 32, 37, 47, 52]
+
+Requirements from workbook:
+  PGY1 ICU: 8
+  PGY1 FLOORS: 20
+  PGY1 CLINIC: 14
+  PGY1 CARDIO: 2
+  PGY1 ID: 2
+  PGY1 ED: 2
+  PGY1 VACATION: 4
+  PGY2 ICU: 8
+  PGY2 FLOORS: 16
+  PGY2 CLINIC: 14
+  PGY2 CARDIO: 4
+  PGY2 ID: 2
+  PGY2 ED: 2
+  PGY2 NEURO: 2
+  PGY2 VACATION: 4
+  PGY3 FLOORS: 16
+  PGY3 CLINIC: 14
+  PGY3 VACATION: 4
+  TY ICU: 8
+  TY FLOORS: 20
+  TY CLINIC: 4
+  TY ID: 2
+  TY ED: 2
+  TY VACATION: 4
+
+Requirement Load analysis:
+  ICU: Total Required=288, Capacity=312
+  FLOORS: Total Required=904, Capacity=832
+    !!! ERROR: Requirement (904) exceeds capacity (832)
+  NF: Total Required=0, Capacity=104
+  ED: Total Required=72, Capacity=156

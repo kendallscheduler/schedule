@@ -1,0 +1,176 @@
+2026-02-13 10:59:42,338 INFO Received generate request. Job ID: 288a02df-0707-4e05-9e3d-ae358a2ad7ab, Year ID: 2
+2026-02-13 10:59:42,338 INFO Job 288a02df-0707-4e05-9e3d-ae358a2ad7ab: Starting background thread
+2026-02-13 11:01:14,645 INFO Received generate request. Job ID: c9a8dc04-fdc6-45c8-a342-8f8ced3130f7, Year ID: 2
+2026-02-13 11:01:14,675 INFO Job c9a8dc04-fdc6-45c8-a342-8f8ced3130f7: Starting background thread
+2026-02-13 11:01:14,675 INFO Job c9a8dc04-fdc6-45c8-a342-8f8ced3130f7: Running solve logic
+2026-02-13 11:01:14,800 ERROR Job c9a8dc04-fdc6-45c8-a342-8f8ced3130f7: Failed with error: name 'residents_data' is not defined
+Traceback (most recent call last):
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 113, in _run_solve
+    _solve_logic(req, t_db, job_id)
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 203, in _solve_logic
+    residents=residents_data,
+NameError: name 'residents_data' is not defined
+
+2026-02-13 11:01:14,800 INFO Job c9a8dc04-fdc6-45c8-a342-8f8ced3130f7: Thread finished, DB session closed
+2026-02-13 11:03:44,131 INFO Received generate request. Job ID: 78a736b0-a531-4886-82da-2d5c26274a11, Year ID: 2
+2026-02-13 11:03:44,167 INFO Job 78a736b0-a531-4886-82da-2d5c26274a11: Starting background thread
+2026-02-13 11:03:44,167 INFO Job 78a736b0-a531-4886-82da-2d5c26274a11: Running solve logic
+2026-02-13 11:03:46,295 ERROR Job 78a736b0-a531-4886-82da-2d5c26274a11: Failed with error: module 'ortools.sat.python.cp_model' has no attribute 'AUTOMATIC'
+Traceback (most recent call last):
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 113, in _run_solve
+    _solve_logic(req, t_db, job_id)
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 244, in _solve_logic
+    assignments, status, conflicts = solve(
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/engine.py", line 455, in solve
+    solver.parameters.search_branching = cp_model.AUTOMATIC
+AttributeError: module 'ortools.sat.python.cp_model' has no attribute 'AUTOMATIC'
+
+2026-02-13 11:03:46,304 INFO Job 78a736b0-a531-4886-82da-2d5c26274a11: Thread finished, DB session closed
+2026-02-13 11:04:41,941 INFO Received generate request. Job ID: fe8de6ec-2472-4737-9883-60bd61a124a4, Year ID: 2
+2026-02-13 11:04:41,979 INFO Job fe8de6ec-2472-4737-9883-60bd61a124a4: Starting background thread
+2026-02-13 11:04:41,979 INFO Job fe8de6ec-2472-4737-9883-60bd61a124a4: Running solve logic
+2026-02-13 11:04:46,155 INFO Job fe8de6ec-2472-4737-9883-60bd61a124a4: Solve logic completed successfully
+2026-02-13 11:04:46,156 INFO Job fe8de6ec-2472-4737-9883-60bd61a124a4: Thread finished, DB session closed
+2026-02-13 11:05:35,783 INFO Received generate request. Job ID: d20fb9e1-bc7f-45fa-a8c0-277cbf3ee413, Year ID: 2
+2026-02-13 11:05:35,785 INFO Job d20fb9e1-bc7f-45fa-a8c0-277cbf3ee413: Starting background thread
+2026-02-13 11:05:35,786 INFO Job d20fb9e1-bc7f-45fa-a8c0-277cbf3ee413: Running solve logic
+2026-02-13 11:05:39,500 INFO Job d20fb9e1-bc7f-45fa-a8c0-277cbf3ee413: Solve logic completed successfully
+2026-02-13 11:05:39,500 INFO Job d20fb9e1-bc7f-45fa-a8c0-277cbf3ee413: Thread finished, DB session closed
+2026-02-13 11:06:55,027 INFO Received generate request. Job ID: 894cbf19-a4f0-4edc-8361-c8b6e4830a69, Year ID: 2
+2026-02-13 11:06:55,063 INFO Job 894cbf19-a4f0-4edc-8361-c8b6e4830a69: Starting background thread
+2026-02-13 11:06:55,064 INFO Job 894cbf19-a4f0-4edc-8361-c8b6e4830a69: Running solve logic
+2026-02-13 11:06:55,664 ERROR Job 894cbf19-a4f0-4edc-8361-c8b6e4830a69: Failed with error: local variable 'total_deficit' referenced before assignment
+Traceback (most recent call last):
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 113, in _run_solve
+    _solve_logic(req, t_db, job_id)
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 244, in _solve_logic
+    assignments, status, conflicts = solve(
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/engine.py", line 229, in solve
+    total_deficit.append(b * 5000) # High penalty, but allows it if needed
+UnboundLocalError: local variable 'total_deficit' referenced before assignment
+
+2026-02-13 11:06:55,667 INFO Job 894cbf19-a4f0-4edc-8361-c8b6e4830a69: Thread finished, DB session closed
+2026-02-13 11:07:04,233 INFO Received generate request. Job ID: 684d80a6-c36e-438b-8f74-ede716ecfd50, Year ID: 2
+2026-02-13 11:07:04,303 INFO Job 684d80a6-c36e-438b-8f74-ede716ecfd50: Starting background thread
+2026-02-13 11:07:04,312 INFO Job 684d80a6-c36e-438b-8f74-ede716ecfd50: Running solve logic
+2026-02-13 11:07:04,670 ERROR Job 684d80a6-c36e-438b-8f74-ede716ecfd50: Failed with error: local variable 'total_deficit' referenced before assignment
+Traceback (most recent call last):
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 113, in _run_solve
+    _solve_logic(req, t_db, job_id)
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/routers/schedule.py", line 244, in _solve_logic
+    assignments, status, conflicts = solve(
+  File "/Volumes/Mel's SSD/Master Schedule/webapp/backend/engine.py", line 229, in solve
+    total_deficit.append(b * 5000) # High penalty, but allows it if needed
+UnboundLocalError: local variable 'total_deficit' referenced before assignment
+
+2026-02-13 11:07:04,673 INFO Job 684d80a6-c36e-438b-8f74-ede716ecfd50: Thread finished, DB session closed
+2026-02-13 15:27:52,960 INFO Received generate request. Job ID: f1339e45-f10a-4ee3-812c-d0b2ce48fe27, Year ID: 2
+2026-02-13 15:27:53,287 INFO Job f1339e45-f10a-4ee3-812c-d0b2ce48fe27: Starting background thread
+2026-02-13 15:27:53,288 INFO Job f1339e45-f10a-4ee3-812c-d0b2ce48fe27: Running solve logic
+2026-02-13 15:27:57,304 INFO Job f1339e45-f10a-4ee3-812c-d0b2ce48fe27: Solve logic completed successfully
+2026-02-13 15:27:57,305 INFO Job f1339e45-f10a-4ee3-812c-d0b2ce48fe27: Thread finished, DB session closed
+2026-02-13 17:31:56,100 INFO Received generate request. Job ID: ea2c89c1-c72f-4aa5-b4ea-45daa5f9603e, Year ID: 2
+2026-02-13 17:31:56,143 INFO Job ea2c89c1-c72f-4aa5-b4ea-45daa5f9603e: Starting background thread
+2026-02-13 17:31:56,144 INFO Job ea2c89c1-c72f-4aa5-b4ea-45daa5f9603e: Running solve logic
+2026-02-13 17:32:00,353 INFO Job ea2c89c1-c72f-4aa5-b4ea-45daa5f9603e: Solve logic completed successfully
+2026-02-13 17:32:00,353 INFO Job ea2c89c1-c72f-4aa5-b4ea-45daa5f9603e: Thread finished, DB session closed
+2026-02-13 17:32:23,881 INFO Received generate request. Job ID: 607400b1-6118-49a7-9881-dcfdc161e31c, Year ID: 2
+2026-02-13 17:32:23,883 INFO Job 607400b1-6118-49a7-9881-dcfdc161e31c: Starting background thread
+2026-02-13 17:32:23,883 INFO Job 607400b1-6118-49a7-9881-dcfdc161e31c: Running solve logic
+2026-02-13 17:32:27,951 INFO Job 607400b1-6118-49a7-9881-dcfdc161e31c: Solve logic completed successfully
+2026-02-13 17:32:27,951 INFO Job 607400b1-6118-49a7-9881-dcfdc161e31c: Thread finished, DB session closed
+2026-02-13 17:35:56,802 INFO Received generate request. Job ID: 5f56a208-97c9-4c34-8ef6-b973c5a11090, Year ID: 2
+2026-02-13 17:35:56,832 INFO Job 5f56a208-97c9-4c34-8ef6-b973c5a11090: Starting background thread
+2026-02-13 17:35:56,832 INFO Job 5f56a208-97c9-4c34-8ef6-b973c5a11090: Running solve logic
+2026-02-13 17:36:01,882 INFO Job 5f56a208-97c9-4c34-8ef6-b973c5a11090: Solve logic completed successfully
+2026-02-13 17:36:01,912 INFO Job 5f56a208-97c9-4c34-8ef6-b973c5a11090: Thread finished, DB session closed
+2026-02-13 17:41:20,353 INFO Received generate request. Job ID: c944ab8d-589b-4258-b088-bd1d10dfd77d, Year ID: 2
+2026-02-13 17:41:20,400 INFO Job c944ab8d-589b-4258-b088-bd1d10dfd77d: Starting background thread
+2026-02-13 17:41:20,400 INFO Job c944ab8d-589b-4258-b088-bd1d10dfd77d: Running solve logic
+2026-02-13 17:41:24,896 INFO Job c944ab8d-589b-4258-b088-bd1d10dfd77d: Solve logic completed successfully
+2026-02-13 17:41:24,896 INFO Job c944ab8d-589b-4258-b088-bd1d10dfd77d: Thread finished, DB session closed
+2026-02-13 17:44:48,386 INFO Received generate request. Job ID: 954c16cd-6080-4503-a36f-00717e37a94b, Year ID: 2
+2026-02-13 17:44:48,388 INFO Job 954c16cd-6080-4503-a36f-00717e37a94b: Starting background thread
+2026-02-13 17:44:48,388 INFO Job 954c16cd-6080-4503-a36f-00717e37a94b: Running solve logic
+2026-02-13 17:45:01,124 INFO Job 954c16cd-6080-4503-a36f-00717e37a94b: Solve logic completed successfully
+2026-02-13 17:45:01,125 INFO Job 954c16cd-6080-4503-a36f-00717e37a94b: Thread finished, DB session closed
+2026-02-13 18:37:07,259 INFO Received generate request. Job ID: 4c69cdfa-1040-4854-a5b2-e81cdba798fd, Year ID: 2
+2026-02-13 18:37:07,318 INFO Job 4c69cdfa-1040-4854-a5b2-e81cdba798fd: Starting background thread
+2026-02-13 18:37:07,318 INFO Job 4c69cdfa-1040-4854-a5b2-e81cdba798fd: Running solve logic
+2026-02-13 18:39:11,019 INFO Job 4c69cdfa-1040-4854-a5b2-e81cdba798fd: Solve logic completed successfully
+2026-02-13 18:39:11,023 INFO Job 4c69cdfa-1040-4854-a5b2-e81cdba798fd: Thread finished, DB session closed
+2026-02-13 19:00:01,221 INFO Received generate request. Job ID: 9576f200-ebe8-44cf-930e-261691d57b6d, Year ID: 2
+2026-02-13 19:00:01,285 INFO Job 9576f200-ebe8-44cf-930e-261691d57b6d: Starting background thread
+2026-02-13 19:00:01,285 INFO Job 9576f200-ebe8-44cf-930e-261691d57b6d: Running solve logic
+2026-02-13 19:02:06,688 INFO Job 9576f200-ebe8-44cf-930e-261691d57b6d: Solve logic completed successfully
+2026-02-13 19:02:06,692 INFO Job 9576f200-ebe8-44cf-930e-261691d57b6d: Thread finished, DB session closed
+2026-02-13 19:04:24,143 INFO Received generate request. Job ID: 1b76d378-546e-42de-bd07-716cf6530e50, Year ID: 2
+2026-02-13 19:04:24,198 INFO Job 1b76d378-546e-42de-bd07-716cf6530e50: Starting background thread
+2026-02-13 19:04:24,198 INFO Job 1b76d378-546e-42de-bd07-716cf6530e50: Running solve logic
+2026-02-13 19:06:27,752 INFO Job 1b76d378-546e-42de-bd07-716cf6530e50: Solve logic completed successfully
+2026-02-13 19:06:27,755 INFO Job 1b76d378-546e-42de-bd07-716cf6530e50: Thread finished, DB session closed
+2026-02-13 19:08:23,661 INFO Received generate request. Job ID: 744b6770-a189-4e09-b2d4-e3f7fd8393c8, Year ID: 2
+2026-02-13 19:08:23,664 INFO Job 744b6770-a189-4e09-b2d4-e3f7fd8393c8: Starting background thread
+2026-02-13 19:08:23,664 INFO Job 744b6770-a189-4e09-b2d4-e3f7fd8393c8: Running solve logic
+2026-02-13 19:08:38,462 INFO Job 744b6770-a189-4e09-b2d4-e3f7fd8393c8: Solve logic completed successfully
+2026-02-13 19:08:38,508 INFO Job 744b6770-a189-4e09-b2d4-e3f7fd8393c8: Thread finished, DB session closed
+2026-02-13 19:24:36,865 INFO Received generate request. Job ID: cdf26ae3-221c-4243-8f82-61eed01ba73b, Year ID: 2
+2026-02-13 19:24:36,895 INFO Job cdf26ae3-221c-4243-8f82-61eed01ba73b: Starting background thread
+2026-02-13 19:24:36,895 INFO Job cdf26ae3-221c-4243-8f82-61eed01ba73b: Running solve logic
+2026-02-13 19:24:47,373 INFO Job cdf26ae3-221c-4243-8f82-61eed01ba73b: Solve logic completed successfully
+2026-02-13 19:24:47,374 INFO Job cdf26ae3-221c-4243-8f82-61eed01ba73b: Thread finished, DB session closed
+2026-02-13 19:32:44,101 INFO Received generate request. Job ID: be4e6487-b82e-44bd-a383-3ef9bc4cd96f, Year ID: 2
+2026-02-13 19:32:44,104 INFO Job be4e6487-b82e-44bd-a383-3ef9bc4cd96f: Starting background thread
+2026-02-13 19:32:44,104 INFO Job be4e6487-b82e-44bd-a383-3ef9bc4cd96f: Running solve logic
+2026-02-13 19:32:55,550 INFO Job be4e6487-b82e-44bd-a383-3ef9bc4cd96f: Solve logic completed successfully
+2026-02-13 19:32:55,551 INFO Job be4e6487-b82e-44bd-a383-3ef9bc4cd96f: Thread finished, DB session closed
+2026-02-13 19:42:59,946 INFO Received generate request. Job ID: f6aa5e26-e611-4cec-803f-3db1e28f38c4, Year ID: 2
+2026-02-13 19:43:00,004 INFO Job f6aa5e26-e611-4cec-803f-3db1e28f38c4: Starting background thread
+2026-02-13 19:43:00,004 INFO Job f6aa5e26-e611-4cec-803f-3db1e28f38c4: Running solve logic
+2026-02-13 19:48:01,595 INFO Job f6aa5e26-e611-4cec-803f-3db1e28f38c4: Solve logic completed successfully
+2026-02-13 19:48:02,011 INFO Job f6aa5e26-e611-4cec-803f-3db1e28f38c4: Thread finished, DB session closed
+2026-02-13 20:03:11,421 INFO Received generate request. Job ID: d36866f8-0bef-4ff3-b93d-a711a9666803, Year ID: 2
+2026-02-13 20:03:11,476 INFO Job d36866f8-0bef-4ff3-b93d-a711a9666803: Starting background thread
+2026-02-13 20:03:11,476 INFO Job d36866f8-0bef-4ff3-b93d-a711a9666803: Running solve logic
+2026-02-13 20:08:13,998 INFO Job d36866f8-0bef-4ff3-b93d-a711a9666803: Solve logic completed successfully
+2026-02-13 20:08:14,044 INFO Job d36866f8-0bef-4ff3-b93d-a711a9666803: Thread finished, DB session closed
+2026-02-13 22:00:36,661 INFO Received generate request. Job ID: f1c84464-005e-4de2-b7d4-f71dfe87c3f8, Year ID: 2
+2026-02-13 22:00:36,724 INFO Job f1c84464-005e-4de2-b7d4-f71dfe87c3f8: Starting background thread
+2026-02-13 22:00:36,724 INFO Job f1c84464-005e-4de2-b7d4-f71dfe87c3f8: Running solve logic
+2026-02-13 22:05:38,831 INFO Job f1c84464-005e-4de2-b7d4-f71dfe87c3f8: Solve logic completed successfully
+2026-02-13 22:05:38,884 INFO Job f1c84464-005e-4de2-b7d4-f71dfe87c3f8: Thread finished, DB session closed
+2026-02-13 22:17:35,411 INFO Received generate request. Job ID: 934a320f-b2e7-4114-a45a-57ced63c4002, Year ID: 2
+2026-02-13 22:17:35,477 INFO Job 934a320f-b2e7-4114-a45a-57ced63c4002: Starting background thread
+2026-02-13 22:17:35,478 INFO Job 934a320f-b2e7-4114-a45a-57ced63c4002: Running solve logic
+2026-02-13 22:22:37,852 INFO Job 934a320f-b2e7-4114-a45a-57ced63c4002: Solve logic completed successfully
+2026-02-13 22:22:37,902 INFO Job 934a320f-b2e7-4114-a45a-57ced63c4002: Thread finished, DB session closed
+2026-02-13 22:36:47,309 INFO Received generate request. Job ID: b645d6d1-ed4c-4112-a69c-07bc7c1d0297, Year ID: 2
+2026-02-13 22:36:47,383 INFO Job b645d6d1-ed4c-4112-a69c-07bc7c1d0297: Starting background thread
+2026-02-13 22:36:47,383 INFO Job b645d6d1-ed4c-4112-a69c-07bc7c1d0297: Running solve logic
+2026-02-13 22:41:49,648 INFO Job b645d6d1-ed4c-4112-a69c-07bc7c1d0297: Solve logic completed successfully
+2026-02-13 22:41:49,693 INFO Job b645d6d1-ed4c-4112-a69c-07bc7c1d0297: Thread finished, DB session closed
+2026-02-13 23:07:52,379 INFO Received generate request. Job ID: 6d3988cb-a6df-42e4-891c-14e12882f53b, Year ID: 2
+2026-02-13 23:07:52,451 INFO Job 6d3988cb-a6df-42e4-891c-14e12882f53b: Starting background thread
+2026-02-13 23:07:52,451 INFO Job 6d3988cb-a6df-42e4-891c-14e12882f53b: Running solve logic
+2026-02-13 23:12:55,609 INFO Job 6d3988cb-a6df-42e4-891c-14e12882f53b: Solve logic completed successfully
+2026-02-13 23:12:55,657 INFO Job 6d3988cb-a6df-42e4-891c-14e12882f53b: Thread finished, DB session closed
+2026-02-13 23:45:22,270 INFO Received generate request. Job ID: 73922c75-2349-4571-82eb-b5c0ec9cff31, Year ID: 2
+2026-02-13 23:45:22,338 INFO Job 73922c75-2349-4571-82eb-b5c0ec9cff31: Starting background thread
+2026-02-13 23:45:22,338 INFO Job 73922c75-2349-4571-82eb-b5c0ec9cff31: Running solve logic
+2026-02-13 23:50:25,193 INFO Job 73922c75-2349-4571-82eb-b5c0ec9cff31: Solve logic completed successfully
+2026-02-13 23:50:25,246 INFO Job 73922c75-2349-4571-82eb-b5c0ec9cff31: Thread finished, DB session closed
+2026-02-14 13:43:46,945 INFO Received generate request. Job ID: 9ac42e02-7557-4bc1-876e-a1b353858ddf, Year ID: 2
+2026-02-14 13:43:47,008 INFO Job 9ac42e02-7557-4bc1-876e-a1b353858ddf: Starting background thread
+2026-02-14 13:43:47,008 INFO Job 9ac42e02-7557-4bc1-876e-a1b353858ddf: Running solve logic
+2026-02-14 13:48:50,054 INFO Job 9ac42e02-7557-4bc1-876e-a1b353858ddf: Solve logic completed successfully
+2026-02-14 13:48:50,099 INFO Job 9ac42e02-7557-4bc1-876e-a1b353858ddf: Thread finished, DB session closed
+2026-02-14 14:13:17,592 INFO Received generate request. Job ID: 4f0eb490-e86e-4e77-8ef6-19a25461a696, Year ID: 2
+2026-02-14 14:13:17,654 INFO Job 4f0eb490-e86e-4e77-8ef6-19a25461a696: Starting background thread
+2026-02-14 14:13:17,654 INFO Job 4f0eb490-e86e-4e77-8ef6-19a25461a696: Running solve logic
+2026-02-14 14:18:22,652 INFO Job 4f0eb490-e86e-4e77-8ef6-19a25461a696: Solve logic completed successfully
+2026-02-14 14:18:22,688 INFO Job 4f0eb490-e86e-4e77-8ef6-19a25461a696: Thread finished, DB session closed
+2026-02-14 14:27:51,508 INFO Received generate request. Job ID: 6ca24fd6-595e-4c30-b45a-dfd14559a1df, Year ID: 2
+2026-02-14 14:27:51,569 INFO Job 6ca24fd6-595e-4c30-b45a-dfd14559a1df: Starting background thread
+2026-02-14 14:27:51,569 INFO Job 6ca24fd6-595e-4c30-b45a-dfd14559a1df: Running solve logic
+2026-02-14 14:32:55,190 INFO Job 6ca24fd6-595e-4c30-b45a-dfd14559a1df: Solve logic completed successfully
+2026-02-14 14:32:55,199 INFO Job 6ca24fd6-595e-4c30-b45a-dfd14559a1df: Thread finished, DB session closed

@@ -1,0 +1,439 @@
+import json
+from datetime import datetime
+
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from database import get_db
+from models import (
+    Resident, Requirement, Completion, VacationRequest,
+    Cohort, ScheduleAssignment, ScheduleBackup, Year,
+)
+from category_rotations import get_categories_for_rotation
+from schemas import (
+    GenerateScheduleRequest, GenerateScheduleResponse, UpdateAssignmentRequest,
+    ClearScheduleRequest, ScheduleBackupOut,
+)
+from engine import solve
+
+router = APIRouter()
+
+
+def _infeasibility_hints(residents_data: list, cohort_defs: list, status: str = "") -> list[str]:
+    """Return diagnostic hints when schedule is infeasible. Helps the scheduler fix the roster or constraints."""
+    hints = []
+    n_seniors = sum(1 for r in residents_data if r.get("is_senior"))
+    n_interns = sum(1 for r in residents_data if r.get("is_intern"))
+    n_total = len(residents_data)
+    pgy_counts = {}
+    for r in residents_data:
+        p = r.get("pgy", "?")
+        pgy_counts[p] = pgy_counts.get(p, 0) + 1
+    roster_line = f"Roster: {n_seniors} seniors (PGY2/PGY3), {n_interns} interns (PGY1/TY), {n_total} total"
+    if pgy_counts:
+        roster_line += f" — PGY1: {pgy_counts.get('PGY1', 0)}, PGY2: {pgy_counts.get('PGY2', 0)}, PGY3: {pgy_counts.get('PGY3', 0)}, TY: {pgy_counts.get('TY', 0)}"
+    hints.append(roster_line)
+    if n_seniors < 9:
+        hints.append(
+            f"Staffing shortfall — seniors: Need at least 9 per week for coverage. "
+            f"Add more PGY2/PGY3 residents or promote interns."
+        )
+    if n_interns < 12:
+        hints.append(
+            f"Staffing shortfall — interns: Need at least 12 per week for coverage. "
+            f"Add more PGY1/TY residents."
+        )
+    cohort_sizes = {}
+    for cd in cohort_defs or []:
+        n = sum(1 for r in residents_data if r.get("cohort_id") == cd["cohort_id"])
+        if n > 0:
+            cohort_sizes[cd["cohort_id"]] = n
+    from engine import MAX_COHORT_SIZE
+    for cid, n in cohort_sizes.items():
+        if n > MAX_COHORT_SIZE:
+            hints.append(
+                f"Cohort size exceeded: {n} residents; max is {MAX_COHORT_SIZE}. Reassign to other cohorts."
+            )
+    if status == "UNKNOWN":
+        hints.append(
+            "Solver did not find a solution. Relax vacation requests or reduce requirements and try again."
+        )
+    else:
+        hints.append(
+            "Likely causes: vacation blocks (Block A/B) too restrictive, "
+            "requirements too high for 52 weeks. Try: relax vacation options or clear some requests."
+        )
+    return hints
+
+
+@router.post("/generate", response_model=GenerateScheduleResponse)
+def generate_schedule(req: GenerateScheduleRequest, db: Session = Depends(get_db)):
+    from engine import MAX_COHORT_SIZE
+    residents = db.query(Resident).filter(Resident.year_id == req.year_id).all()
+    if not residents:
+        raise HTTPException(400, "No residents for this year")
+    cohort_counts = {}
+    for r in residents:
+        if r.cohort_id:
+            cohort_counts[r.cohort_id] = cohort_counts.get(r.cohort_id, 0) + 1
+    for cid, n in cohort_counts.items():
+        if n > MAX_COHORT_SIZE:
+            c = db.query(Cohort).filter(Cohort.id == cid).first()
+            cname = c.name if c else str(cid)
+            raise HTTPException(400, f"Cohort {cname} has {n} residents; max is {MAX_COHORT_SIZE}. Reassign before generating.")
+
+    reqs = db.query(Requirement).all()
+    req_by_key = {}
+    for r in reqs:
+        key = f"{r.pgy}:{r.track or ''}"
+        req_by_key.setdefault(key, []).append({
+            "category": r.category,
+            "required_weeks": r.required_weeks,
+            "counts_as": r.counts_as or [],
+        })
+    # FLOORS, ICU, CLINIC, NF, ICU_NIGHT are ANNUAL (per year). CARDIO, ID, NEURO, ED, GERIATRICS are CUMULATIVE (total over residency).
+    # For cumulative: split total across PGY years that have the requirement.
+    # CUMULATIVE: We subtract what they did in prior years from the 3-year target.
+    # ANNUAL: Reset every year. CUMULATIVE: Track total across all years of residency.
+    ANNUAL_CATEGORIES = {"FLOORS", "ICU", "CLINIC", "VACATION", "PULMONOLOGY", "NEPHROLOGY", "PALLIATIVE", "PAIN", "RHEUMATOLOGY", "ENDOCRINOLOGY"}
+    CUMULATIVE_CATEGORIES = {"CARDIO", "ID", "NEURO", "ED", "GERIATRICS"}
+    pgy_order = ["PGY1", "PGY2", "PGY3"]
+    # Build cumulative totals and which PGYs have each category
+    cum_totals = {}
+    cum_pgys = {}
+    for pgy in pgy_order:
+        key = f"{pgy}:"
+        if key not in req_by_key:
+            continue
+        for r in req_by_key[key]:
+            cat = r["category"]
+            if cat in CUMULATIVE_CATEGORIES:
+                cum_totals[cat] = max(cum_totals.get(cat, 0), r["required_weeks"])
+                if pgy not in cum_pgys.setdefault(cat, []):
+                    cum_pgys[cat].append(pgy)
+    # Build Requirements
+    requirements_by_pgy = {}
+    for key, items in req_by_key.items():
+        requirements_by_pgy[key] = [
+            {"category": r["category"], "required_weeks": r["required_weeks"], "counts_as": r.get("counts_as", [])}
+            for r in items
+        ]
+
+    # TESTING: skip vacation preferences; solver places 4 weeks freely per resident
+    vacations = []
+
+    assignments, status, conflicts = solve(
+        residents=residents_data,
+        requirements_by_pgy=requirements_by_pgy,
+        completions_by_resident=completions_by_resident,
+        vacation_requests=vacations,
+        cohort_defs=cohort_defs,
+        time_limit=req.time_limit_seconds,
+        random_seed=req.random_seed,
+    )
+
+    vacation_relaxed = False
+    if assignments is None and vacations:
+        assignments, status, conflicts = solve(
+            residents=residents_data,
+            requirements_by_pgy=requirements_by_pgy,
+            completions_by_resident=completions_by_resident,
+            vacation_requests=vacations,
+            cohort_defs=cohort_defs,
+            time_limit=req.time_limit_seconds,
+            random_seed=req.random_seed,
+            relax_vacation_blocks=True,
+        )
+        if assignments is not None:
+            vacation_relaxed = True
+            conflicts = conflicts + ["Vacation Block A/B preferences could not be satisfied; schedule placed 4 weeks freely per resident."]
+
+    geriatrics_relaxed = False
+    if assignments is None:
+        assignments, status, conflicts = solve(
+            residents=residents_data,
+            requirements_by_pgy=requirements_by_pgy,
+            completions_by_resident=completions_by_resident,
+            vacation_requests=vacations,
+            cohort_defs=cohort_defs,
+            time_limit=req.time_limit_seconds,
+            random_seed=req.random_seed,
+            relax_geriatrics_coverage=True,
+        )
+        if assignments is not None:
+            geriatrics_relaxed = True
+            conflicts = conflicts + ["GERIATRICS coverage (1 senior/week) could not be satisfied; schedule generated without it."]
+
+    if assignments is None:
+        hints = _infeasibility_hints(residents_data, cohort_defs, status)
+        if status == "UNKNOWN":
+            message = "Solver ran out of time before finding a solution. Try again—a valid schedule may exist."
+        else:
+            message = "Schedule infeasible"
+        return GenerateScheduleResponse(
+            success=False,
+            status=status,
+            message=message,
+            conflicts=conflicts + hints,
+        )
+
+    # Clear old assignments for this year
+    db.query(ScheduleAssignment).filter(ScheduleAssignment.year_id == req.year_id).delete()
+
+    count = 0
+    for resident_id, weeks in assignments.items():
+        for week_num, rot in weeks.items():
+            a = ScheduleAssignment(
+                resident_id=resident_id,
+                year_id=req.year_id,
+                week_number=week_num,
+                rotation_code=rot,
+            )
+            db.add(a)
+            count += 1
+    db.commit()
+
+    return GenerateScheduleResponse(
+        success=True,
+        status=status,
+        assignment_count=count,
+        conflicts=conflicts if (vacation_relaxed or geriatrics_relaxed) else [],
+    )
+
+
+@router.get("/assignments")
+def get_assignments(year_id: int, db: Session = Depends(get_db)):
+    """Returns {resident_id: {week: rotation_code}}"""
+    rows = db.query(ScheduleAssignment).filter(ScheduleAssignment.year_id == year_id).all()
+    result = {}
+    for r in rows:
+        result.setdefault(r.resident_id, {})[r.week_number] = r.rotation_code
+    return result
+
+
+@router.put("/assignment")
+def update_assignment(data: UpdateAssignmentRequest, db: Session = Depends(get_db)):
+    """Update or create a single schedule assignment. Use empty string to clear."""
+    if not 1 <= data.week_number <= 52:
+        raise HTTPException(400, "week_number must be 1-52")
+    existing = db.query(ScheduleAssignment).filter(
+        ScheduleAssignment.resident_id == data.resident_id,
+        ScheduleAssignment.year_id == data.year_id,
+        ScheduleAssignment.week_number == data.week_number,
+    ).first()
+    if data.rotation_code:
+        if existing:
+            existing.rotation_code = data.rotation_code
+        else:
+            db.add(ScheduleAssignment(
+                resident_id=data.resident_id,
+                year_id=data.year_id,
+                week_number=data.week_number,
+                rotation_code=data.rotation_code,
+            ))
+    else:
+        if existing:
+            db.delete(existing)
+    db.commit()
+    return {"ok": True}
+
+
+@router.get("/remaining")
+def get_remaining_requirements(year_id: int, db: Session = Depends(get_db)):
+    """Compute remaining weeks per resident per category after schedule."""
+    residents = db.query(Resident).filter(Resident.year_id == year_id).all()
+    def _reqs_for_resident(res):
+        q = db.query(Requirement).filter(Requirement.pgy == res.pgy)
+        q = q.filter((Requirement.track.is_(None)) | (Requirement.track == res.track))
+        all_reqs = list(q.all())
+        by_cat = {}
+        for req in sorted(all_reqs, key=lambda r: (1 if r.track else 0)):
+            by_cat[req.category] = req
+        return list(by_cat.values())
+    reqs = {r.id: _reqs_for_resident(r) for r in residents}
+    comps = {}
+    for c in db.query(Completion).all():
+        comps.setdefault(c.resident_id, {})[c.category] = c.completed_weeks
+
+    # Category -> rotation codes. NF counts as FLOORS. SWING counts as NF or ICU_NIGHT (whichever needed).
+    # ICU days and nights interchangeable for ICU total.
+    CAT_ROTS = {
+        "CLINIC": ["CLINIC", "CLINIC *"],  # both count toward required; overflow counts as elective
+        "CARDIO": ["CARDIO", "CARDIO-RAM", "CARDIO-HCA"],
+        "ED": ["ED"], "ID": ["ID"], "NEURO": ["NEURO"],
+        "VACATION": ["VACATION"],
+        "GERIATRICS": ["GERIATRICS"],
+        "PULMONOLOGY": ["PULMONOLOGY"], "NEPHROLOGY": ["NEPHROLOGY"],
+        "PALLIATIVE": ["PALLIATIVE"], "PAIN": ["PAIN"],
+        "RHEUMATOLOGY": ["RHEUMATOLOGY"], "ENDOCRINOLOGY": ["ENDOCRINOLOGY"],
+        "TRAUMA": ["TRAUMA"], "SICU": ["SICU"], "PLASTIC": ["PLASTIC"],
+        "ELECTIVE": ["ELECTIVE", "CARDIO", "CARDIO-RAM", "CARDIO-HCA", "ID", "NEURO", "GERIATRICS",
+                     "PULMONOLOGY", "NEPHROLOGY", "PALLIATIVE", "PAIN", "RHEUMATOLOGY", "ENDOCRINOLOGY", "ICU H"],
+    }
+    FLOOR_ROTS = ["A", "B", "C", "D", "G"]
+    ICU_ROTS = ["ICU", "ICU E", "ICU N"]
+
+    assignments = {}
+    for a in db.query(ScheduleAssignment).filter(ScheduleAssignment.year_id == year_id).all():
+        assignments.setdefault(a.resident_id, {})[a.week_number] = a.rotation_code
+
+    def _assign_swing_optimal(floor_cnt, nf_cnt, icun_cnt, swing_cnt, req_floors, req_nf, req_icun):
+        """Assign SWING to NF or ICU_NIGHT to minimize remaining. NF counts as floor."""
+        best_rem, best_x = float("inf"), 0
+        for x in range(swing_cnt + 1):
+            floors_done = floor_cnt + nf_cnt + x
+            nf_done = nf_cnt + x
+            icun_done = icun_cnt + (swing_cnt - x)
+            rem = max(0, req_floors - floors_done) + max(0, req_nf - nf_done) + max(0, req_icun - icun_done)
+            if rem < best_rem:
+                best_rem, best_x = rem, x
+        return best_x
+
+    out = []
+    for r in residents:
+        comp = comps.get(r.id, {})
+        assigns = assignments.get(r.id, {})
+        floor_cnt = sum(1 for rot in assigns.values() if rot in FLOOR_ROTS)
+        nf_cnt = sum(1 for rot in assigns.values() if rot == "NF")
+        icun_cnt = sum(1 for rot in assigns.values() if rot == "ICU N")
+        swing_cnt = sum(1 for rot in assigns.values() if rot == "SWING")
+        resident_reqs = reqs.get(r.id, [])
+        req_floors = next((x.required_weeks for x in resident_reqs if x.category == "FLOORS"), 0)
+        req_nf = next((x.required_weeks for x in resident_reqs if x.category == "NF"), 0)
+        req_icun = next((x.required_weeks for x in resident_reqs if x.category == "ICU_NIGHT"), 0)
+        swing_to_nf = _assign_swing_optimal(floor_cnt, nf_cnt, icun_cnt, swing_cnt, req_floors, req_nf, req_icun)
+        def _eff(cat):
+            return max(0, comp.get(cat, 0))
+        done = {}
+        done["FLOORS"] = _eff("FLOORS") + floor_cnt + nf_cnt + swing_to_nf
+        done["ICU"] = _eff("ICU") + sum(1 for rot in assigns.values() if rot in ICU_ROTS)
+        done["NF"] = _eff("NF") + nf_cnt + swing_to_nf
+        done["ICU_NIGHT"] = _eff("ICU_NIGHT") + icun_cnt + (swing_cnt - swing_to_nf)
+        done["SWING"] = _eff("SWING") + swing_cnt
+        for w, rot in assigns.items():
+            for cat, rots in CAT_ROTS.items():
+                if rot in rots:
+                    done[cat] = done.get(cat, _eff(cat)) + 1
+        # Clinic overflow (beyond required) counts as elective
+        clinic_cnt = sum(1 for rot in assigns.values() if rot in ("CLINIC", "CLINIC *"))
+        req_clinic = next((x.required_weeks for x in resident_reqs if x.category == "CLINIC"), 0)
+        clinic_overflow = max(0, _eff("CLINIC") + clinic_cnt - req_clinic)
+        done["ELECTIVE"] = done.get("ELECTIVE", _eff("ELECTIVE")) + clinic_overflow
+        for req in resident_reqs:
+            required = req.required_weeks
+            completed = max(0, done.get(req.category, 0))
+            remaining = max(0, required - completed)
+            if remaining > 0 or completed > 0:
+                out.append({
+                    "resident_id": r.id,
+                    "resident_name": r.name,
+                    "pgy": r.pgy,
+                    "category": req.category,
+                    "required": required,
+                    "completed": completed,
+                    "remaining": remaining,
+                })
+        swing_done = max(0, done.get("SWING", 0))
+        out.append({
+                "resident_id": r.id,
+                "resident_name": r.name,
+                "pgy": r.pgy,
+                "category": "SWING",
+                "required": 0,
+                "completed": swing_done,
+                "remaining": 0,
+            })
+        electives_done = max(0, done.get("ELECTIVE", 0))
+        out.append({
+                "resident_id": r.id,
+                "resident_name": r.name,
+                "pgy": r.pgy,
+                "category": "ELECTIVES",
+                "required": 0,
+                "completed": electives_done,
+                "remaining": 0,
+            })
+    return out
+
+
+@router.post("/clear")
+def clear_schedule(req: ClearScheduleRequest, db: Session = Depends(get_db)):
+    """Clear rotations for a resident or whole schedule. Creates backup first. Requires confirm_text='DELETE'."""
+    if req.confirm_text != "DELETE":
+        raise HTTPException(400, "You must type DELETE to confirm. No changes were made.")
+    rows = db.query(ScheduleAssignment).filter(ScheduleAssignment.year_id == req.year_id)
+    if req.resident_id is not None:
+        rows = rows.filter(ScheduleAssignment.resident_id == req.resident_id)
+    assignments_list = rows.all()
+    if not assignments_list:
+        return {"ok": True, "cleared": 0, "message": "Nothing to clear"}
+    backup_data = {}
+    for a in assignments_list:
+        backup_data.setdefault(a.resident_id, {})[a.week_number] = a.rotation_code
+    resident = db.query(Resident).filter(Resident.id == req.resident_id).first() if req.resident_id else None
+    desc = f"Before clearing {resident.name}" if resident else "Before clearing entire schedule"
+    backup = ScheduleBackup(
+        year_id=req.year_id,
+        description=desc,
+        assignments_json=json.dumps(backup_data),
+    )
+    db.add(backup)
+    for a in assignments_list:
+        db.delete(a)
+    affected = {}  # (resident_id, category) -> True
+    for resid, weeks in backup_data.items():
+        for rot in set(weeks.values()):
+            for cat in get_categories_for_rotation(rot):
+                affected[(resid, cat)] = True
+    for (resid, cat) in affected:
+        c = db.query(Completion).filter(
+            Completion.resident_id == resid,
+            Completion.category == cat,
+        ).first()
+        if c:
+            c.completed_weeks = 0
+            c.source = "manual"
+        else:
+            db.add(Completion(resident_id=resid, category=cat, completed_weeks=0, source="manual"))
+    db.commit()
+    db.refresh(backup)
+    return {"ok": True, "cleared": len(assignments_list), "backup_id": backup.id}
+
+
+@router.get("/backups", response_model=list)
+def list_backups(year_id: int, db: Session = Depends(get_db)):
+    """List schedule backups for a year, newest first."""
+    backups = db.query(ScheduleBackup).filter(ScheduleBackup.year_id == year_id).order_by(ScheduleBackup.created_at.desc()).all()
+    return [
+        {
+            "id": b.id,
+            "year_id": b.year_id,
+            "description": b.description,
+            "created_at": b.created_at.isoformat() if b.created_at else None,
+        }
+        for b in backups
+    ]
+
+
+@router.post("/restore/{backup_id}")
+def restore_backup(backup_id: int, db: Session = Depends(get_db)):
+    """Restore schedule from a backup."""
+    backup = db.query(ScheduleBackup).filter(ScheduleBackup.id == backup_id).first()
+    if not backup:
+        raise HTTPException(404, "Backup not found")
+    data = json.loads(backup.assignments_json)
+    existing = db.query(ScheduleAssignment).filter(ScheduleAssignment.year_id == backup.year_id).all()
+    for a in existing:
+        db.delete(a)
+    count = 0
+    for resident_id, weeks in data.items():
+        for week_num, rot in weeks.items():
+            db.add(ScheduleAssignment(
+                resident_id=int(resident_id),
+                year_id=backup.year_id,
+                week_number=int(week_num),
+                rotation_code=str(rot),
+            ))
+            count += 1
+    db.commit()
+    return {"ok": True, "restored": count}
