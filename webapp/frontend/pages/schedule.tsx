@@ -110,16 +110,19 @@ export default function SchedulePage() {
   }, [])
 
   const blocks = [
-    { label: 'Block 1', colspan: 5 },
-    { label: 'Block 2', colspan: 5 },
+    { label: 'Block 1', colspan: 4 },
+    { label: 'Block 2', colspan: 4 },
     { label: 'Block 3', colspan: 4 },
-    { label: 'Block 5', colspan: 5 },
-    { label: 'End of year', colspan: 5 },
-    { label: 'Block 6', colspan: 5 },
-    { label: 'Block 7', colspan: 5 },
-    { label: 'Block 8', colspan: 5 },
-    { label: 'Block 9', colspan: 5 },
-    { label: 'Block 10', colspan: 8 },
+    { label: 'Block 4', colspan: 4 },
+    { label: 'Block 5', colspan: 4 },
+    { label: 'Block 6', colspan: 4 },
+    { label: 'Block 7', colspan: 4 },
+    { label: 'Block 8', colspan: 4 },
+    { label: 'Block 9', colspan: 4 },
+    { label: 'Block 10', colspan: 4 },
+    { label: 'Block 11', colspan: 4 },
+    { label: 'Block 12', colspan: 4 },
+    { label: 'Block 13', colspan: 4 },
   ]
   const blockEdges = useMemo(() => {
     let sum = 0
