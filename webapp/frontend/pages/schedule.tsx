@@ -631,16 +631,16 @@ export default function SchedulePage() {
                       const trackInfo = r.pgy === 'TY' ? (r.track ? r.track.charAt(0).toUpperCase() + r.track.slice(1) : '—') : (r.cohort_name ?? r.cohort_id ?? '—')
 
                       return (
-                        <tr key={r.id}>
+                        <tr key={r.id} style={{ background: 'white' }}>
                           <td style={{ fontWeight: 500, fontSize: '0.85rem' }}>{r.name}</td>
                           <td style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{trackInfo}</td>
                           <td style={{ color: '#94a3b8', fontSize: '0.8rem' }}>{r.pgy}</td>
-                          <td style={{ textAlign: 'center', background: floors > 0 ? 'rgba(134, 239, 172, 0.05)' : 'transparent', color: floors > 0 ? '#86efac' : '#475569', fontWeight: floors > 0 ? 600 : 400 }}>{floors}</td>
-                          <td style={{ textAlign: 'center', background: icu > 0 ? 'rgba(125, 211, 252, 0.05)' : 'transparent', color: icu > 0 ? '#7dd3fc' : '#475569', fontWeight: icu > 0 ? 600 : 400 }}>{icu}</td>
-                          <td style={{ textAlign: 'center', background: icun > 0 ? 'rgba(56, 189, 248, 0.05)' : 'transparent', color: icun > 0 ? '#38bdf8' : '#475569', fontWeight: icun > 0 ? 600 : 400 }}>{icun}</td>
-                          <td style={{ textAlign: 'center', background: nf > 0 ? 'rgba(226, 232, 240, 0.05)' : 'transparent', color: nf > 0 ? '#e2e8f0' : '#475569', fontWeight: nf > 0 ? 600 : 400 }}>{nf}</td>
-                          <td style={{ textAlign: 'center', background: swing > 0 ? 'rgba(196, 181, 253, 0.05)' : 'transparent', color: swing > 0 ? '#c4b5fd' : '#475569', fontWeight: swing > 0 ? 600 : 400 }}>{swing}</td>
-                          <td style={{ textAlign: 'center', background: core > 0 ? 'rgba(253, 186, 116, 0.05)' : 'transparent', color: core > 0 ? '#fdba74' : '#475569', fontWeight: core > 0 ? 600 : 400 }}>{core}</td>
+                          <td style={{ textAlign: 'center', background: floors > 0 ? 'rgba(134, 239, 172, 0.05)' : 'white', color: floors > 0 ? '#86efac' : '#475569', fontWeight: floors > 0 ? 600 : 400 }}>{floors}</td>
+                          <td style={{ textAlign: 'center', background: icu > 0 ? 'rgba(125, 211, 252, 0.05)' : 'white', color: icu > 0 ? '#7dd3fc' : '#475569', fontWeight: icu > 0 ? 600 : 400 }}>{icu}</td>
+                          <td style={{ textAlign: 'center', background: icun > 0 ? 'rgba(56, 189, 248, 0.05)' : 'white', color: icun > 0 ? '#38bdf8' : '#475569', fontWeight: icun > 0 ? 600 : 400 }}>{icun}</td>
+                          <td style={{ textAlign: 'center', background: nf > 0 ? 'rgba(226, 232, 240, 0.05)' : 'white', color: nf > 0 ? '#e2e8f0' : '#475569', fontWeight: nf > 0 ? 600 : 400 }}>{nf}</td>
+                          <td style={{ textAlign: 'center', background: swing > 0 ? 'rgba(196, 181, 253, 0.05)' : 'white', color: swing > 0 ? '#c4b5fd' : '#475569', fontWeight: swing > 0 ? 600 : 400 }}>{swing}</td>
+                          <td style={{ textAlign: 'center', background: core > 0 ? 'rgba(253, 186, 116, 0.05)' : 'white', color: core > 0 ? '#fdba74' : '#475569', fontWeight: core > 0 ? 600 : 400 }}>{core}</td>
                         </tr>
                       )
                     })}
@@ -666,7 +666,7 @@ export default function SchedulePage() {
                   </thead>
                   <tbody>
                     {remaining.filter((r) => r.remaining > 0).map((r, i) => (
-                      <tr key={i}>
+                      <tr key={i} style={{ background: 'white' }}>
                         <td style={{ fontSize: '0.85rem' }}>{r.resident_name}</td>
                         <td style={{ fontSize: '0.85rem' }}>{r.category}</td>
                         <td style={{ textAlign: 'center', fontSize: '0.85rem' }}>{r.required}</td>
