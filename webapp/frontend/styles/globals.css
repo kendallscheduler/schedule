@@ -284,10 +284,32 @@ tr:hover {
 /* 1. Vertically sticky header rows */
 .schedule-excel-table thead th {
   position: sticky;
-  top: 0;
-  z-index: 50;
   background: #f1f5f9;
-  border-bottom: 2px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+/* Block Row (First row) */
+.schedule-block-row th {
+  top: 0;
+  z-index: 55;
+  height: 32px;
+}
+
+/* Week Row (Second row) */
+.schedule-week-row th {
+  top: 32px;
+  /* Offset by the height of the block row */
+  z-index: 50;
+}
+
+/* RowSpan columns (Info headers) stay at top 0 but span full header height */
+.schedule-th-clear,
+.schedule-th-cohort,
+.schedule-th-pgy,
+.schedule-th-name {
+  top: 0 !important;
+  z-index: 70 !important;
+  /* Highest priority */
 }
 
 /* 2. Horizontally sticky info columns */
