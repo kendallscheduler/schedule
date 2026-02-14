@@ -295,7 +295,7 @@ tr:hover {
   position: sticky;
   left: 0;
   z-index: 40;
-  background: #f8fafc !important;
+  background-color: white !important;
 }
 
 .schedule-th-cohort,
@@ -303,7 +303,7 @@ tr:hover {
   position: sticky;
   left: 40px;
   z-index: 40;
-  background: #f8fafc !important;
+  background-color: white !important;
 }
 
 .schedule-th-pgy,
@@ -311,7 +311,7 @@ tr:hover {
   position: sticky;
   left: 120px;
   z-index: 40;
-  background: #f8fafc !important;
+  background-color: white !important;
 }
 
 .schedule-th-name,
@@ -319,8 +319,30 @@ tr:hover {
   position: sticky;
   left: 180px;
   z-index: 40;
-  background: #f8fafc !important;
+  background-color: white !important;
   border-right: 2px solid #cbd5e1 !important;
+}
+
+/* Ensure alternating row backgrounds still apply to sticky columns */
+.cohort-strip-1 td.schedule-td-clear,
+.cohort-strip-1 td.schedule-td-cohort,
+.cohort-strip-1 td.schedule-td-pgy,
+.cohort-strip-1 td.schedule-td-name {
+  background-color: #f8fafc !important;
+}
+
+.cohort-strip-2 td.schedule-td-clear,
+.cohort-strip-2 td.schedule-td-cohort,
+.cohort-strip-2 td.schedule-td-pgy,
+.cohort-strip-2 td.schedule-td-name {
+  background-color: white !important;
+}
+
+.cohort-strip-3 td.schedule-td-clear,
+.cohort-strip-3 td.schedule-td-cohort,
+.cohort-strip-3 td.schedule-td-pgy,
+.cohort-strip-3 td.schedule-td-name {
+  background-color: #f1f5f9 !important;
 }
 
 /* 3. Intersection (Top-Left Headers) need highest z-index */
