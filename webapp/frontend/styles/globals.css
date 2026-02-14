@@ -253,19 +253,17 @@ tr:hover {
   background: var(--bg-white);
   overflow: auto;
   max-height: calc(100vh - 180px);
-  /* Increased from 280px to 180px for a taller window */
   position: relative;
   outline: none;
+  /* Prevent scroll chaining (scrolling the main page when grid reaches end) */
+  overscroll-behavior: contain;
   /* Hide native scrollbars to avoid duplicates with our custom synced bars */
   scrollbar-width: none;
-  /* Firefox */
   -ms-overflow-style: none;
-  /* IE/Edge */
 }
 
 .schedule-excel-wrapper::-webkit-scrollbar {
   display: none;
-  /* Chrome, Safari, Opera */
 }
 
 .schedule-scroll-bar-top,
@@ -420,6 +418,10 @@ tr:hover {
 .schedule-td-rot {
   font-weight: 500;
   color: #1e293b;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
 }
 
 /* Resident Differentiation */

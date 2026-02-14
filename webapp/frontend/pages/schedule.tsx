@@ -7,7 +7,7 @@ const ROT_LABEL: Record<string, string> = {
   ICU: 'ICU', 'ICU N': 'ICU N',
   NF: 'NF', SWING: 'SWING',
   CLINIC: 'CLINIC', 'CLINIC *': 'CLINIC*',
-  ED: 'ED', VACATION: 'VACATION',
+  ED: 'ED', VACATION: 'VAC',
   CARDIO: 'CARDIO',
   ID: 'ID', NEURO: 'NEURO', GERIATRICS: 'GERI',
   ELECTIVE: 'ELECT', 'GEN SURG': 'SURG',
