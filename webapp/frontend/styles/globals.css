@@ -252,7 +252,8 @@ tr:hover {
 .schedule-excel-wrapper {
   background: var(--bg-white);
   overflow: auto;
-  max-height: calc(100vh - 280px);
+  max-height: calc(100vh - 180px);
+  /* Increased from 280px to 180px for a taller window */
   position: relative;
   outline: none;
 }
