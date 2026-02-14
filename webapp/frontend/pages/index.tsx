@@ -11,14 +11,44 @@ export default function Home() {
 
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 1rem' }}>
-      <header style={{ textAlign: 'center', marginBottom: '4rem', marginTop: '4rem' }}>
-        <img src="/kendall_logo.jpg" alt="Kendall Internal Medicine Logo" style={{ width: 150, height: 150, marginBottom: '2rem', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }} />
-        <h1 style={{ fontSize: '3rem', marginBottom: '1rem', background: 'linear-gradient(135deg, #0f172a 0%, #2563eb 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1.2 }}>
-          Kendall Hospital Internal Medicine<br />Master Scheduler
-        </h1>
-        <p style={{ fontSize: '1.125rem', color: '#64748b', maxWidth: 600, margin: '0 auto' }}>
-          Efficiently manage residency rotations and staffing coverage with our AI-driven scheduling engine.
-        </p>
+      <header style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '3rem',
+        marginBottom: '5rem',
+        marginTop: '5rem',
+        textAlign: 'left'
+      }}>
+        <img
+          src="/kendall_logo.jpg"
+          alt="Kendall Internal Medicine Logo"
+          style={{
+            width: 180,
+            height: 180,
+            borderRadius: '20px',
+            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            border: '1px solid #e2e8f0'
+          }}
+        />
+        <div>
+          <h1 style={{
+            fontSize: '3.25rem',
+            marginBottom: '0.75rem',
+            background: 'linear-gradient(135deg, #0f172a 0%, #2563eb 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            lineHeight: 1.1,
+            fontWeight: 800
+          }}>
+            Kendall Hospital<br />
+            <span style={{ fontSize: '2.5rem' }}>Internal Medicine</span><br />
+            <span style={{ fontSize: '2rem', opacity: 0.9 }}>Master Scheduler</span>
+          </h1>
+          <p style={{ fontSize: '1.125rem', color: '#64748b', maxWidth: 500, margin: 0 }}>
+            Optimized residency rotations and staffing coverage powered by our AI-driven engine.
+          </p>
+        </div>
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.25rem', marginBottom: '4rem' }}>
