@@ -231,7 +231,8 @@ def solve(
             model.Add(sum(jr_nf) + sum(sr_nf) == 2)
             model.Add(sum(jr_icun) + sum(sr_icun) == 2)
             model.Add(sum(jr_swing) + sum(sr_swing) == 2)
-            model.Add(sum(sr_g) == 1)
+            # FIX: Team G is NOT scheduled on holiday weeks.
+            model.Add(sum(sr_g) == 0)
         else:
             model.Add(sum(jr_nf) == 1)
             model.Add(sum(jr_icun) == 1)
@@ -239,7 +240,9 @@ def solve(
             model.Add(sum(sr_nf) == 1)
             model.Add(sum(sr_icun) == 1)
             model.Add(sum(sr_swing) == 1)
-            model.Add(sum(sr_g) == 1)
+            # FIX: Team G is optional and only used as a last resort to fill floor needs.
+            model.Add(sum(sr_g) <= 1)
+            total_deficit.append(sum(sr_g) * 1000) # Small penalty to favor 0 occupancy
 
         # No interns on Team G (Senior only)
         jr_g = [get_ind(r, w, IDX_G) for r in intern_idxs]
