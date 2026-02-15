@@ -354,57 +354,62 @@ def solve(
         for s in range(49):  # 52 - 4 + 1
             model.Add(sum(floor_bools[s:s + 5]) <= 4)
 
-    # 6c. Max consecutive weeks on the SAME floor team (A, B, C, or D).
-    # Seniors (PGY2/PGY3) max 2 weeks. Interns max 4 weeks.
+    # 6c. Max consecutive weeks on the SAME floor team (A, B, C, D, or G).
+    # Team G (Seniors): Strictly 2 weeks max consecutively.
+    # ABCD Seniors: 2 weeks max. ABCD Interns: 4 weeks max.
     for r in range(N):
-        is_sr = (residents[r].get("pgy") in ["PGY2", "PGY3"])
+        pgy_str = residents[r].get("pgy", "PGY1")
+        is_sr = (pgy_str in ["PGY2", "PGY3"])
+        
+        # TEAM G: Strict 2-week cap for everyone (only seniors can do G anyway)
+        g_bools = [get_ind(r, w, IDX_G) for w in weeks]
+        for s in range(50):
+            model.Add(sum(g_bools[s:s+3]) <= 2)
+
+        # ABCD TEAMS
         limit = 2 if is_sr else 4
         for team_idx in FLOOR_ABCD:
             team_bools = [get_ind(r, w, team_idx) for w in weeks]
             for s in range(52 - limit):
                 model.Add(sum(team_bools[s:s + limit + 1]) <= limit)
 
-    # 6d. STAGGER CLINIC: Favor max 2 consecutive CLINIC weeks.
-    # Soft constraint to avoid infeasibility with cohort rules.
+    # 6d. STAGGER ELECTIVES & CLINIC
+    # PGY1/2: Max 2-3 consecutive weeks of Electives to maintain balanced pace.
+    # PGY3: Flexible (they should finish early).
+    ANY_ELECTIVE_IDX = [ROT_IDX["ELECTIVE"], ROT_IDX["CARDIO"], ROT_IDX["ID"], 
+                        ROT_IDX["NEURO"], ROT_IDX["GERIATRICS"], ROT_IDX["GEN SURG"]]
+    
     for r in range(N):
+        pgy_str = residents[r].get("pgy", "PGY1")
+        is_pgy3 = (pgy_str == "PGY3")
+        
+        # Elective staggering for PGY1/2
+        if not is_pgy3:
+            el_bools = [get_ind_set(r, w, ANY_ELECTIVE_IDX, "el_stag") for w in weeks]
+            for s in range(50):
+                # Hard limit 3, soft limit 2
+                model.Add(sum(el_bools[s:s+4]) <= 3)
+                excess_el = model.NewBoolVar(f"el_exc_{r}_{s}")
+                model.Add(sum(el_bools[s:s+3]) >= 3).OnlyEnforceIf(excess_el)
+                total_deficit.append(excess_el * 100000) # Penalty for >2 consecutive electives
+
+        # 6e. STAGGER CLINIC: Favor max 2 consecutive CLINIC weeks.
         clinic_bool_list = [get_ind_set(r, w, CLINIC_ALL_IDX, "cl") for w in weeks]
-        for s in range(50): # 52 - 3 + 1
+        for s in range(50): 
             excess = model.NewBoolVar(f"cl_exc_{r}_{s}")
             model.Add(sum(clinic_bool_list[s:s+3]) >= 3).OnlyEnforceIf(excess)
-            model.Add(sum(clinic_bool_list[s:s+3]) <= 2).OnlyEnforceIf(excess.Not())
             total_deficit.append(excess * 500000)
 
-    # 6e. Stagger core electives (max 2 consecutive weeks).
-    # Cardio, ID, Neuro, ED, Geriatrics: Try to do 2 first, then 2 later.
-    STAGGER_CATS = ["CARDIO", "ID", "NEURO", "ED", "GERIATRICS"]
-    for r in range(N):
-        for cat in STAGGER_CATS:
-            idx_list = CORE_ELECTIVES.get(cat)
-            if not idx_list: continue
-            cat_bool_list = [get_ind_set(r, w, idx_list, f"st_{cat}") for w in weeks]
-            for s in range(51):
-                model.Add(sum(cat_bool_list[s:s+3]) <= 2)
-
-    # 6f. Global Staggering: NO rotation or group of rotations more than 4 weeks straight.
-    # Group similar rotations to avoid e.g. 7 weeks of "Clinic" by switching codes.
+    # 6f. Global Staggering Safety Net
     STAGGER_GROUPS = [
         ("FLOOR", ALL_FLOOR_IDX),
-        ("CLINIC", CLINIC_ALL_IDX + [IDX_TY_CLINIC]),
         ("NIGHTS", NIGHT_IDX),
     ]
     for r in range(N):
-        # Already handled complex floor/night rules, this is a safety net.
-        # Check specific groups
         for name, idx_list in STAGGER_GROUPS:
             group_bools = [get_ind_set(r, w, idx_list, f"stag_{name}") for w in weeks]
-            for s in range(48): # 52 - 5 + 1
+            for s in range(48): 
                 model.Add(sum(group_bools[s:s+5]) <= 4)
-
-        # Also check every individual index for anything else (Electives)
-        for idx in range(N_ROT):
-            rot_bools = [get_ind(r, w, idx) for w in weeks]
-            for s in range(48):
-                model.Add(sum(rot_bools[s:s+5]) <= 4)
 
     # Block Stability: Soft preference for same rotation in consecutive weeks.
     # SIMPLIFIED: just track changes in the objective, no intermediate variables.

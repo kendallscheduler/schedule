@@ -1,8 +1,34 @@
 
 > schedule-frontend@1.0.0 dev
-> next dev -p 3000
+> next dev
 
   ▲ Next.js 14.2.35
   - Local:        http://localhost:3000
 
  ✓ Starting...
+ ✓ Ready in 5.7s
+ ○ Compiling /generate ...
+ ✓ Compiled /generate in 750ms (309 modules)
+ GET /_next/static/webpack/ebeed7121b90c6c0.webpack.hot-update.json 404 in 1129ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /generate 200 in 912ms
+ GET / 200 in 6ms
+ ✓ Compiled /api/[...path] in 53ms (97 modules)
+ GET /api/years 304 in 702ms
+ GET /api/years 304 in 3ms
+ GET /generate 200 in 30ms
+ GET /api/years 304 in 4ms
+ GET /api/years 304 in 4ms
+ ○ Compiling /schedule ...
+ ✓ Compiled /schedule in 650ms (305 modules)
+ ✓ Compiled /api/[...path] in 44ms (95 modules)
+ GET /api/years 304 in 423ms
+ GET /api/years 304 in 9ms
+ GET /api/years/1 304 in 105ms
+ GET /api/schedule/assignments?year_id=1 304 in 253ms
+ GET /api/residents?year_id=1 304 in 284ms
+ GET /api/schedule/remaining?year_id=1 304 in 390ms
+ GET /api/years/2 304 in 85ms
+ GET /api/residents?year_id=2 304 in 98ms
+ GET /api/schedule/assignments?year_id=2 200 in 134ms
+ GET /api/schedule/remaining?year_id=2 200 in 193ms
