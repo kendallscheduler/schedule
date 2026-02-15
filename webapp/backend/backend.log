@@ -439,3 +439,55 @@ INFO:     ::1:0 - "GET /api/residents?year_id=2 HTTP/1.1" 307 Temporary Redirect
 INFO:     ::1:0 - "GET /api/residents/?year_id=2 HTTP/1.1" 200 OK
 INFO:     ::1:0 - "GET /api/schedule/assignments?year_id=2 HTTP/1.1" 200 OK
 INFO:     ::1:0 - "GET /api/schedule/remaining?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/residents?year_id=2 HTTP/1.1" 307 Temporary Redirect
+INFO:     ::1:0 - "GET /api/residents/?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/schedule/assignments?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/schedule/remaining?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/residents?year_id=2 HTTP/1.1" 307 Temporary Redirect
+INFO:     ::1:0 - "GET /api/residents/?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/schedule/assignments?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/schedule/remaining?year_id=2 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'database.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61770]
+WARNING:  WatchFiles detected changes in 'database.py'. Reloading...
+INFO:     Started server process [72308]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72308]
+WARNING:  WatchFiles detected changes in 'main.py'. Reloading...
+INFO:     Started server process [72557]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'run.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72557]
+WARNING:  WatchFiles detected changes in 'run.py'. Reloading...
+INFO:     Started server process [72665]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'run.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [72665]
+WARNING:  WatchFiles detected changes in 'run.py'. Reloading...
+INFO:     Started server process [73334]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'database.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [73334]
+INFO:     Started server process [73441]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

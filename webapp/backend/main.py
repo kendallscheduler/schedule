@@ -68,6 +68,33 @@ app.include_router(export.router, prefix="/api/export", tags=["export"])
 app.include_router(rollover.router, prefix="/api/rollover", tags=["rollover"])
 
 
-@app.get("/")
-def root():
-    return {"message": "IM Residency Schedule Generator API", "docs": "/docs"}
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+import os
+import sys
+
+# Serve static files if "static" directory exists (prod/app mode)
+# In PyInstaller, we might put static files in sys._MEIPASS/static or local static folder
+if getattr(sys, 'frozen', False):
+    STATIC_DIR = Path(sys._MEIPASS) / "static"
+else:
+    STATIC_DIR = Path(__file__).parent / "static"
+
+if STATIC_DIR.exists():
+    app.mount("/_next", StaticFiles(directory=STATIC_DIR / "_next"), name="next")
+    # Serve other static assets if any
+    
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        # API requests are already handled by routers above due to order
+        # Check if file exists
+        file_path = STATIC_DIR / full_path
+        if file_path.exists() and file_path.is_file():
+            return FileResponse(file_path)
+        # Fallback to index.html for SPA routing
+        return FileResponse(STATIC_DIR / "index.html")
+else:
+    @app.get("/")
+    def root():
+        return {"message": "IM Residency Schedule Generator API (Dev Mode)", "docs": "/docs"}

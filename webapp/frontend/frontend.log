@@ -56,3 +56,22 @@
  GET /api/residents?year_id=2 304 in 1125ms
  GET /api/schedule/assignments?year_id=2 304 in 1176ms
  GET /api/schedule/remaining?year_id=2 304 in 1254ms
+ GET /api/residents?year_id=2 304 in 935ms
+ GET /api/schedule/assignments?year_id=2 304 in 1422ms
+ GET /api/schedule/remaining?year_id=2 304 in 1559ms
+ GET /api/residents?year_id=2 304 in 93ms
+ GET /api/schedule/assignments?year_id=2 304 in 132ms
+ GET /api/schedule/remaining?year_id=2 304 in 244ms
+ ⚠ Found a change in next.config.js. Restarting the server to apply the changes...
+  ▲ Next.js 14.2.35
+  - Local:        http://localhost:3000
+
+ ✓ Starting...
+ ⨯ API Routes cannot be used with "output: export". See more info here: https://nextjs.org/docs/advanced-features/static-html-export
+ ✓ Ready in 5.2s
+ ○ Compiling /schedule ...
+ ✓ Compiled /schedule in 2.3s (305 modules)
+ GET /_next/static/webpack/e012685f1f32891c.webpack.hot-update.json 404 in 2653ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /schedule 200 in 2611ms
+ GET /schedule 200 in 8ms
