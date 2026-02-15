@@ -184,3 +184,8 @@ UnboundLocalError: local variable 'total_deficit' referenced before assignment
 2026-02-14 18:12:47,065 INFO Job 2115701d-7055-48c6-9ce1-86c2845c8fe6: Running solve logic
 2026-02-14 18:17:50,148 INFO Job 2115701d-7055-48c6-9ce1-86c2845c8fe6: Solve logic completed successfully
 2026-02-14 18:17:50,181 INFO Job 2115701d-7055-48c6-9ce1-86c2845c8fe6: Thread finished, DB session closed
+2026-02-14 19:44:51,838 INFO Received generate request. Job ID: d18b4700-31e0-4108-8218-fba86cf85c05, Year ID: 2
+2026-02-14 19:44:51,878 INFO Job d18b4700-31e0-4108-8218-fba86cf85c05: Starting background thread
+2026-02-14 19:44:51,878 INFO Job d18b4700-31e0-4108-8218-fba86cf85c05: Running solve logic
+2026-02-14 19:44:56,314 INFO Job d18b4700-31e0-4108-8218-fba86cf85c05: Solve logic completed successfully
+2026-02-14 19:44:56,314 INFO Job d18b4700-31e0-4108-8218-fba86cf85c05: Thread finished, DB session closed

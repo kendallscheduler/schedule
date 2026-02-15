@@ -184,3 +184,25 @@ WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
 INFO:     Started server process [51813]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     ::1:0 - "POST /api/schedule/clear HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/schedule/assignments?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/schedule/remaining?year_id=2 HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/years/ HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/years/ HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59547 - "OPTIONS /api/schedule/generate HTTP/1.1" 200 OK
+DEBUG: Entering _run_solve for job d18b4700-31e0-4108-8218-fba86cf85c05
+DEBUG: Session created for job d18b4700-31e0-4108-8218-fba86cf85c05
+INFO:     127.0.0.1:59547 - "POST /api/schedule/generate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59547 - "GET /api/schedule/generate/status/d18b4700-31e0-4108-8218-fba86cf85c05 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59549 - "GET /api/schedule/generate/status/d18b4700-31e0-4108-8218-fba86cf85c05 HTTP/1.1" 200 OK
+DEBUG: Solve logic finished for job d18b4700-31e0-4108-8218-fba86cf85c05
+INFO:     127.0.0.1:59549 - "GET /api/schedule/generate/status/d18b4700-31e0-4108-8218-fba86cf85c05 HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [51813]
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Started server process [54673]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

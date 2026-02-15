@@ -354,17 +354,19 @@ def solve(
         for s in range(49):  # 52 - 4 + 1
             model.Add(sum(floor_bools[s:s + 5]) <= 4)
 
-    # 6c. Max consecutive weeks on the SAME floor team (A, B, C, D, or G).
-    # Team G (Seniors): Strictly 2 weeks max consecutively.
+    # 6c. Soft consecutive limits on the SAME floor team (A, B, C, D, or G).
+    # Team G (Seniors): Preferred 2 weeks max consecutively.
     # ABCD Seniors: 2 weeks max. ABCD Interns: 4 weeks max.
     for r in range(N):
         pgy_str = residents[r].get("pgy", "PGY1")
         is_sr = (pgy_str in ["PGY2", "PGY3"])
         
-        # TEAM G: Strict 2-week cap for everyone (only seniors can do G anyway)
+        # TEAM G: Soft 2-week cap (rewarding diversity)
         g_bools = [get_ind(r, w, IDX_G) for w in weeks]
         for s in range(50):
-            model.Add(sum(g_bools[s:s+3]) <= 2)
+            excess_g = model.NewBoolVar(f"g_exc_{r}_{s}")
+            model.Add(sum(g_bools[s:s+3]) >= 3).OnlyEnforceIf(excess_g)
+            total_deficit.append(excess_g * 1000000) # Heavy penalty for >2 consecutive G weeks
 
         # ABCD TEAMS
         limit = 2 if is_sr else 4
@@ -373,7 +375,7 @@ def solve(
             for s in range(52 - limit):
                 model.Add(sum(team_bools[s:s + limit + 1]) <= limit)
 
-    # 6d. STAGGER ELECTIVES & CLINIC
+    # 6d. STAGGER ELECTIVES & CLINIC (SOFT)
     # PGY1/2: Max 2-3 consecutive weeks of Electives to maintain balanced pace.
     # PGY3: Flexible (they should finish early).
     ANY_ELECTIVE_IDX = [ROT_IDX["ELECTIVE"], ROT_IDX["CARDIO"], ROT_IDX["ID"], 
@@ -386,12 +388,16 @@ def solve(
         # Elective staggering for PGY1/2
         if not is_pgy3:
             el_bools = [get_ind_set(r, w, ANY_ELECTIVE_IDX, "el_stag") for w in weeks]
-            for s in range(50):
-                # Hard limit 3, soft limit 2
-                model.Add(sum(el_bools[s:s+4]) <= 3)
-                excess_el = model.NewBoolVar(f"el_exc_{r}_{s}")
-                model.Add(sum(el_bools[s:s+3]) >= 3).OnlyEnforceIf(excess_el)
-                total_deficit.append(excess_el * 100000) # Penalty for >2 consecutive electives
+            for s in range(49):
+                # Triple-elective penalty
+                excess_3 = model.NewBoolVar(f"el_exc3_{r}_{s}")
+                model.Add(sum(el_bools[s:s+3]) >= 3).OnlyEnforceIf(excess_3)
+                total_deficit.append(excess_3 * 500000)
+                
+                # Quad-elective penalty (Stricter)
+                excess_4 = model.NewBoolVar(f"el_exc4_{r}_{s}")
+                model.Add(sum(el_bools[s:s+4]) >= 4).OnlyEnforceIf(excess_4)
+                total_deficit.append(excess_4 * 2000000)
 
         # 6e. STAGGER CLINIC: Favor max 2 consecutive CLINIC weeks.
         clinic_bool_list = [get_ind_set(r, w, CLINIC_ALL_IDX, "cl") for w in weeks]
@@ -400,7 +406,7 @@ def solve(
             model.Add(sum(clinic_bool_list[s:s+3]) >= 3).OnlyEnforceIf(excess)
             total_deficit.append(excess * 500000)
 
-    # 6f. Global Staggering Safety Net
+    # 6f. Global Staggering Safety Net (Softened to avoid INFEASIBLE)
     STAGGER_GROUPS = [
         ("FLOOR", ALL_FLOOR_IDX),
         ("NIGHTS", NIGHT_IDX),
@@ -408,8 +414,10 @@ def solve(
     for r in range(N):
         for name, idx_list in STAGGER_GROUPS:
             group_bools = [get_ind_set(r, w, idx_list, f"stag_{name}") for w in weeks]
-            for s in range(48): 
-                model.Add(sum(group_bools[s:s+5]) <= 4)
+            for s in range(47): 
+                excess = model.NewBoolVar(f"glob_exc_{r}_{s}_{name}")
+                model.Add(sum(group_bools[s:s+6]) >= 6).OnlyEnforceIf(excess)
+                total_deficit.append(excess * 5000000)
 
     # Block Stability: Soft preference for same rotation in consecutive weeks.
     # SIMPLIFIED: just track changes in the objective, no intermediate variables.

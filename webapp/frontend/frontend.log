@@ -32,3 +32,8 @@
  GET /api/residents?year_id=2 304 in 98ms
  GET /api/schedule/assignments?year_id=2 200 in 134ms
  GET /api/schedule/remaining?year_id=2 200 in 193ms
+ POST /api/schedule/clear 200 in 868ms
+ GET /api/schedule/assignments?year_id=2 200 in 9ms
+ GET /api/schedule/remaining?year_id=2 200 in 92ms
+ GET /api/years 304 in 40ms
+ GET /api/years 304 in 5ms
