@@ -206,3 +206,112 @@ WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
 INFO:     Started server process [54673]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+DEBUG: Entering _run_solve for job 4ea6a571-5143-4a01-827b-5d426d341e0b
+DEBUG: Session created for job 4ea6a571-5143-4a01-827b-5d426d341e0b
+INFO:     127.0.0.1:59586 - "POST /api/schedule/generate HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59586 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59611 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59611 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59618 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59618 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59618 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59624 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59624 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59626 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59626 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59626 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59630 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59633 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59635 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59635 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59639 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59639 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59639 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59647 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59647 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59650 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59650 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59650 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59657 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59657 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59660 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59660 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59660 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59668 - "GET /api/schedule/generate/status/4ea6a571-5143-4a01-827b-5d426d341e0b HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/years/ HTTP/1.1" 200 OK
+INFO:     ::1:0 - "GET /api/years/ HTTP/1.1" 200 OK
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [54673]
+DEBUG: Solve logic finished for job 4ea6a571-5143-4a01-827b-5d426d341e0b
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Started server process [59948]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [59948]
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Started server process [60062]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60062]
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Started server process [60485]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [60485]
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Started server process [61244]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [61244]
+WARNING:  WatchFiles detected changes in 'engine.py'. Reloading...
+INFO:     Started server process [61770]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.

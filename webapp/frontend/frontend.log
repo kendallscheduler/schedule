@@ -37,3 +37,6 @@
  GET /api/schedule/remaining?year_id=2 200 in 92ms
  GET /api/years 304 in 40ms
  GET /api/years 304 in 5ms
+ GET /generate 200 in 975ms
+ GET /api/years 304 in 280ms
+ GET /api/years 304 in 7ms
